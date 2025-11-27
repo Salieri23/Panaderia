@@ -19,7 +19,6 @@ public class TiendaViewController {
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    // CAMBIO: Ahora la ruta completa es simplemente "/comprar"
     @GetMapping("/comprar")
     public String mostrarPaginaCompras(Model model) {
         
