@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar Productos - Panadería</title>
+    <style>
+        :root {
+            --color-amarillo: #F9D923;
+            --color-azul: #0A2F66;
+            --color-azul-claro: #E8F1FA;
+            --color-hover: #FFD43B;
+            --color-rojo-suave: #fc8181;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, var(--color-azul-claro), #fff);
+            margin: 0;
+            padding: 0;
+            color: var(--color-azul);
+        }
+
+        header {
+            background-color: var(--color-azul);
+            padding: 25px 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 38px;
+            margin: 0;
+        }
+
+        .contenedor-principal {
+            display: flex;
+            gap: 30px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        /* Grid de Productos: 4 columnas por defecto */
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* ¡ASEGURAMOS 4 COLUMNAS! */
+            gap: 25px;
+            flex-grow: 1;
+        }
+
+        .producto-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--color-amarillo);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .producto-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .producto-card .imagen-contenedor {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* CAMBIO CLAVE: La imagen ahora se genera dinámicamente */
+        .producto-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .producto-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .producto-card h3 {
+            font-size: 18px;
+            margin: 10px 0;
+            color: var(--color-azul);
+            min-height: 50px; /* Para que todos los títulos tengan la misma altura */
+        }
+
+        .producto-card .precio {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--color-hover);
+            margin: 10px 0;
+        }
+
+        .btn-agregar {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--color-azul);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-agregar:hover {
+            background-color: var(--color-hover);
+            color: var(--color-azul);
+        }
+
+        /* Resumen del Carrito (sin cambios) */
+        .resumen-carrito {
+            position: sticky;
+            top: 120px;
+            width: 320px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 2px solid var(--color-amarillo);
+            height: fit-content;
+        }
+
+        .resumen-carrito h3 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--color-azul);
+            border-bottom: 2px solid var(--color-azul-claro);
+            padding-bottom: 10px;
+        }
+
+        #lista-carrito {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item-carrito {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-carrito .detalles {
+            flex-grow: 1;
+        }
+
+        .item-carrito .nombre {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .item-carrito .precio-item {
+            color: #555;
+        }
+
+        .item-carrito .acciones {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-cantidad {
+            background-color: var(--color-azul);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-eliminar {
+            background: none;
+            border: none;
+            color: var(--color-rojo-suave);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        #carrito-vacio {
+            text-align: center;
+            color: #888;
+            padding: 20px 0;
+        }
+
+        .total {
+            text-align: right;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            border-top: 2px solid var(--color-azul-claro);
+            padding-top: 15px;
+        }
+
+        .btn-pagar {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-pagar:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .btn-pagar:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Responsividad para que se adapte a pantallas más pequeñas */
+        @media (max-width: 1200px) { .grid-productos { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 900px) {
+            .grid-productos { grid-template-columns: repeat(2, 1fr); }
+            .contenedor-principal { flex-direction: column; }
+            .resumen-carrito { width: 100%; position: relative; top: 0; }
+        }
+        @media (max-width: 600px) { .grid-productos { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🛒 Realizar Compra</h1>
+</header>
+
+<div class="contenedor-principal">
+    <!-- Sección de Productos -->
+    <main class="grid-productos">
+        <!-- Thymeleaf iterará sobre la lista de productos que le pases desde el controlador -->
+        <div class="producto-card" th:each="producto : ${productos}">
+            <div class="imagen-contenedor">
+                <!-- 
+                  CAMBIO CLAVE: Usamos Picsum Photos para generar una imagen única basada en el nombre del producto.
+                  El 'seed' asegura que el mismo producto siempre tenga la misma imagen.
+                  Reemplazamos espacios y caracteres especiales para crear una URL válida.
+                -->
+                <img th:with="seed=${#strings.replace(producto.nombre, ' ', '-')}"
+                     th:src="@{'https://picsum.photos/seed/' + ${seed} + '/200/150.jpg'}" 
+                     th:alt="${producto.nombre}">
+            </div>
+            <div>
+                <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
+                <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
+            </div>
+            <button class="btn-agregar" th:onclick="'agregarAlCarrito(' + ${producto.id_producto} + ', \'' + ${producto.nombre} + '\', ' + ${producto.precio_base} + ')'">Agregar</button>
+        </div>
+    </main>
+
+    <!-- Sección del Carrito de Compras (sin cambios) -->
+    <aside class="resumen-carrito">
+        <h3>🛒 Tu Carrito</h3>
+        <ul id="lista-carrito"></ul>
+        <p id="carrito-vacio">Tu carrito está vacío.</p>
+        <div class="total">
+            Total: <span id="monto-total">S/ 0.00</span>
+        </div>
+        <button id="btn-pagar" class="btn-pagar" disabled>Pagar</button>
+    </aside>
+</div>
+
+<!-- El JavaScript del carrito se mantiene igual -->
+<script>
+    let carrito = [];
+
+    function agregarAlCarrito(id, nombre, precio) {
+        const itemExistente = carrito.find(item => item.id === id);
+        if (itemExistente) {
+            itemExistente.cantidad++;
+        } else {
+            carrito.push({ id, nombre, precio, cantidad: 1 });
+        }
+        actualizarCarrito();
+    }
+
+    function cambiarCantidad(id, delta) {
+        const item = carrito.find(item => item.id === id);
+        if (item) {
+            item.cantidad += delta;
+            if (item.cantidad <= 0) {
+                eliminarDelCarrito(id);
+            } else {
+                actualizarCarrito();
+            }
+        }
+    }
+
+    function eliminarDelCarrito(id) {
+        carrito = carrito.filter(item => item.id !== id);
+        actualizarCarrito();
+    }
+
+    function actualizarCarrito() {
+        const listaCarrito = document.getElementById('lista-carrito');
+        const carritoVacio = document.getElementById('carrito-vacio');
+        const montoTotal = document.getElementById('monto-total');
+        const btnPagar = document.getElementById('btn-pagar');
+
+        listaCarrito.innerHTML = '';
+
+        if (carrito.length === 0) {
+            carritoVacio.style.display = 'block';
+            btnPagar.disabled = true;
+        } else {
+            carritoVacio.style.display = 'none';
+            btnPagar.disabled = false;
+
+            let total = 0;
+            carrito.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                const li = document.createElement('li');
+                li.className = 'item-carrito';
+                li.innerHTML = `
+                    <div class="detalles">
+                        <span class="nombre">${item.nombre}</span>
+                        <span class="precio-item">S/ ${item.precio.toFixed(2)} c/u</span>
+                    </div>
+                    <div class="acciones">
+                        <button class="btn-cantidad" onclick="cambiarCantidad(${item.id}, -1)">-</button>
+                        <span>${item.cantidad}</span>
+                        <button class="btn-cantidad" onclick="cambiarCantidad(${item.id}, 1)">+</button>
+                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${item.id})">&times;</button>
+                    </div>
+                `;
+                listaCarrito.appendChild(li);
+            });
+
+            montoTotal.textContent = `S/ ${total.toFixed(2)}`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', actualizarCarrito);
+</script>
+
+</body>
+</html>
