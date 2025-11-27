@@ -45,10 +45,9 @@
             margin: auto;
         }
 
-        /* Grid de Productos: 4 columnas por defecto */
         .grid-productos {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* ¡ASEGURAMOS 4 COLUMNAS! */
+            grid-template-columns: repeat(4, 1fr);
             gap: 25px;
             flex-grow: 1;
         }
@@ -79,7 +78,6 @@
             margin-bottom: 15px;
         }
 
-        /* CAMBIO CLAVE: La imagen ahora se genera dinámicamente */
         .producto-card img {
             width: 100%;
             height: 100%;
@@ -95,7 +93,7 @@
             font-size: 18px;
             margin: 10px 0;
             color: var(--color-azul);
-            min-height: 50px; /* Para que todos los títulos tengan la misma altura */
+            min-height: 50px;
         }
 
         .producto-card .precio {
@@ -123,7 +121,6 @@
             color: var(--color-azul);
         }
 
-        /* Resumen del Carrito (sin cambios) */
         .resumen-carrito {
             position: sticky;
             top: 120px;
@@ -236,7 +233,6 @@
             cursor: not-allowed;
         }
 
-        /* Responsividad para que se adapte a pantallas más pequeñas */
         @media (max-width: 1200px) { .grid-productos { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 900px) {
             .grid-productos { grid-template-columns: repeat(2, 1fr); }
@@ -253,16 +249,9 @@
 </header>
 
 <div class="contenedor-principal">
-    <!-- Sección de Productos -->
     <main class="grid-productos">
-        <!-- Thymeleaf iterará sobre la lista de productos que le pases desde el controlador -->
         <div class="producto-card" th:each="producto : ${productos}">
             <div class="imagen-contenedor">
-                <!-- 
-                  CAMBIO CLAVE: Usamos Picsum Photos para generar una imagen única basada en el nombre del producto.
-                  El 'seed' asegura que el mismo producto siempre tenga la misma imagen.
-                  Reemplazamos espacios y caracteres especiales para crear una URL válida.
-                -->
                 <img th:with="seed=${#strings.replace(producto.nombre, ' ', '-')}"
                      th:src="@{'https://picsum.photos/seed/' + ${seed} + '/200/150.jpg'}" 
                      th:alt="${producto.nombre}">
@@ -271,11 +260,20 @@
                 <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
                 <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
             </div>
-            <button class="btn-agregar" th:onclick="'agregarAlCarrito(' + ${producto.id_producto} + ', \'' + ${producto.nombre} + '\', ' + ${producto.precio_base} + ')'">Agregar</button>
+            <!-- 
+              CAMBIO CLAVE: Usamos atributos 'data-*' para pasar los datos de forma segura.
+              Evita problemas con comillas en los nombres de los productos.
+            -->
+            <button class="btn-agregar" 
+                    th:data-id="${producto.id_producto}"
+                    th:data-nombre="${producto.nombre}"
+                    th:data-precio="${producto.precio_base}"
+                    onclick="agregarAlCarrito(this)">
+                Agregar
+            </button>
         </div>
     </main>
 
-    <!-- Sección del Carrito de Compras (sin cambios) -->
     <aside class="resumen-carrito">
         <h3>🛒 Tu Carrito</h3>
         <ul id="lista-carrito"></ul>
@@ -287,12 +285,16 @@
     </aside>
 </div>
 
-<!-- JavaScript actualizado -->
 <script>
     let carrito = [];
 
-    // --- FUNCIONES EXISTENTES DEL CARRITO ---
-    function agregarAlCarrito(id, nombre, precio) {
+    // La función ahora recibe el botón como parámetro
+    function agregarAlCarrito(boton) {
+        // Obtenemos los datos desde los atributos 'data-*' del botón
+        const id = parseInt(boton.dataset.id);
+        const nombre = boton.dataset.nombre;
+        const precio = parseFloat(boton.dataset.precio);
+
         const itemExistente = carrito.find(item => item.id === id);
         if (itemExistente) {
             itemExistente.cantidad++;
@@ -360,30 +362,20 @@
         }
     }
 
-    // =================================================================
-    // NUEVA FUNCIÓN PARA PROCESAR EL PAGO
-    // =================================================================
     function procesarPago() {
         if (carrito.length === 0) {
             alert("Tu carrito está vacío.");
             return;
         }
 
-        // --- DATOS QUE NECESITAMOS ---
-        // 1. ID del cliente logueado (inyectado por Thymeleaf desde el controlador)
-        const idCliente = /*[[${idCliente}]]*/ 1; // El '1' es un fallback por si falla la inyección.
-
-        // 2. ID del método de pago (por ahora es fijo, pero podrías añadir un selector)
+        const idCliente = /*[[${idCliente}]]*/ 1;
         const idMetodoPago = 1; 
-
-        // 3. El carrito de compras
         const datosParaEnviar = {
             idCliente: idCliente,
             idMetodoPago: idMetodoPago,
             carrito: carrito
         };
 
-        // Enviar la petición al servidor
         fetch('/api/tienda/procesar-pedido', {
             method: 'POST',
             headers: {
@@ -399,7 +391,6 @@
         })
         .then(data => {
             alert(data.mensaje + " Tu número de pedido es: " + data.id_pedido);
-            // Redirigir al usuario a una página de confirmación o al menú principal
             window.location.href = '/'; 
         })
         .catch(error => {
@@ -408,11 +399,8 @@
         });
     }
 
-    // =================================================================
-    // ASIGNAR LA FUNCIÓN AL BOTÓN DE PAGAR CUANDO LA PÁGINA CARGUE
-    // =================================================================
     document.addEventListener('DOMContentLoaded', () => {
-        actualizarCarrito(); // Carga inicial del carrito
+        actualizarCarrito();
         document.getElementById('btn-pagar').addEventListener('click', procesarPago);
     });
 </script>
