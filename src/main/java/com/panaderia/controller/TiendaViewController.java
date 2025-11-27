@@ -12,18 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/tienda")
+// CAMBIO: Quitamos la ruta base "/tienda"
+@RequestMapping("/") 
 public class TiendaViewController {
 
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
+    // CAMBIO: Ahora la ruta completa es simplemente "/comprar"
     @GetMapping("/comprar")
     public String mostrarPaginaCompras(Model model) {
         
-        // =================================================================
-        // ¡CORRECCIÓN CLAVE! Esta es la nueva consulta SQL con JOIN.
-        // =================================================================
         String sql = """
             SELECT 
                 p.id_producto, 
@@ -38,8 +37,6 @@ public class TiendaViewController {
         try {
             List<Map<String, Object>> productos = jdbcTemplate.queryForList(sql);
             model.addAttribute("productos", productos);
-            
-            // Depuración: Imprime en la consola cuántos productos encontró
             System.out.println("Productos encontrados para la tienda: " + productos.size());
 
         } catch (Exception e) {
@@ -47,7 +44,6 @@ public class TiendaViewController {
             System.err.println("Error al cargar productos para la compra: " + e.getMessage());
         }
 
-        // Obtener el ID del cliente logueado (lógica sin cambios)
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String emailCliente = auth.getName(); 
