@@ -2,6 +2,7 @@ package com.panaderia.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,16 @@ public class ControladorVistaEmpleados {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // 1. INYECTAMOS EL ENCRYPTADOR DE CONTRASEÑAS
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
     // =================================================================
     // OPERACIÓN READ (Leer / Mostrar todos los empleados)
     // =================================================================
     @GetMapping
     public String mostrarEmpleados(Model model) {
-
-        // CAMBIO: Se elimina 'password' de la consulta por seguridad.
         String sql = "SELECT id_empleado, nombre, cargo, email, telefono FROM empleado ORDER BY id_empleado;";
 
         try {
@@ -55,12 +59,12 @@ public class ControladorVistaEmpleados {
         """;
 
         try {
-            // IMPORTANTE: Deberías encriptar la contraseña antes de guardarla.
-            // Por ejemplo, usando BCryptPasswordEncoder.
-            // String passwordEncriptada = passwordEncoder.encode(password);
-            // jdbcTemplate.update(sql, nombre, cargo, email, telefono, passwordEncriptada);
+            // 2. ENCRIPTAMOS LA CONTRASEÑA ANTES DE GUARDARLA
+            String passwordEncriptada = passwordEncoder.encode(password);
             
-            jdbcTemplate.update(sql, nombre, cargo, email, telefono, password);
+            // 3. GUARDAMOS LA CONTRASEÑA YA ENCRIPTADA
+            jdbcTemplate.update(sql, nombre, cargo, email, telefono, passwordEncriptada);
+            
         } catch (Exception e) {
             System.out.println("Error al guardar empleado: " + e.getMessage());
         }
@@ -79,9 +83,7 @@ public class ControladorVistaEmpleados {
             @RequestParam String cargo,
             @RequestParam String email,
             @RequestParam(required = false) String telefono
-            // CAMBIO: Se elimina el parámetro 'password' del método
     ) {
-        // CAMBIO: Se elimina 'password' de la consulta SQL.
         String sql = """
             UPDATE empleado
             SET nombre = ?, cargo = ?, email = ?, telefono = ?
@@ -89,7 +91,6 @@ public class ControladorVistaEmpleados {
         """;
 
         try {
-            // CAMBIO: Se elimina la contraseña de la llamada a jdbcTemplate.update
             jdbcTemplate.update(sql, nombre, cargo, email, telefono, id_empleado);
         } catch (Exception e) {
             System.out.println("Error al actualizar empleado: " + e.getMessage());
