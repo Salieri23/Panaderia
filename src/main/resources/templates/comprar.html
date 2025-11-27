@@ -287,10 +287,11 @@
     </aside>
 </div>
 
-<!-- El JavaScript del carrito se mantiene igual -->
+<!-- JavaScript actualizado -->
 <script>
     let carrito = [];
 
+    // --- FUNCIONES EXISTENTES DEL CARRITO ---
     function agregarAlCarrito(id, nombre, precio) {
         const itemExistente = carrito.find(item => item.id === id);
         if (itemExistente) {
@@ -359,7 +360,61 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', actualizarCarrito);
+    // =================================================================
+    // NUEVA FUNCIÓN PARA PROCESAR EL PAGO
+    // =================================================================
+    function procesarPago() {
+        if (carrito.length === 0) {
+            alert("Tu carrito está vacío.");
+            return;
+        }
+
+        // --- DATOS QUE NECESITAMOS ---
+        // 1. ID del cliente logueado (inyectado por Thymeleaf desde el controlador)
+        const idCliente = /*[[${idCliente}]]*/ 1; // El '1' es un fallback por si falla la inyección.
+
+        // 2. ID del método de pago (por ahora es fijo, pero podrías añadir un selector)
+        const idMetodoPago = 1; 
+
+        // 3. El carrito de compras
+        const datosParaEnviar = {
+            idCliente: idCliente,
+            idMetodoPago: idMetodoPago,
+            carrito: carrito
+        };
+
+        // Enviar la petición al servidor
+        fetch('/api/tienda/procesar-pedido', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosParaEnviar)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || "Error desconocido"); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.mensaje + " Tu número de pedido es: " + data.id_pedido);
+            // Redirigir al usuario a una página de confirmación o al menú principal
+            window.location.href = '/'; 
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Hubo un problema: " + error.message);
+        });
+    }
+
+    // =================================================================
+    // ASIGNAR LA FUNCIÓN AL BOTÓN DE PAGAR CUANDO LA PÁGINA CARGUE
+    // =================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarCarrito(); // Carga inicial del carrito
+        document.getElementById('btn-pagar').addEventListener('click', procesarPago);
+    });
 </script>
 
 </body>
