@@ -251,11 +251,17 @@
 <div class="contenedor-principal">
     <main class="grid-productos">
         <div class="producto-card" th:each="producto : ${productos}">
-            <div class="imagen-contenedor">
-                <img th:with="seed=${#strings.replace(producto.nombre, ' ', '-')}"
-                     th:src="@{'https://picsum.photos/seed/' + ${seed} + '/200/150.jpg'}" 
-                     th:alt="${producto.nombre}">
-            </div>
+            <!-- VERSIÓN NUEVA Y MEJORADA CON UNSPLASH -->
+<div class="imagen-contenedor">
+    <!-- 
+      Usamos Unsplash Source para buscar imágenes reales basadas en el nombre del producto.
+      Reemplazamos espacios por comas para crear una búsqueda de múltiples palabras clave.
+      Ejemplo: "Pan de Miel" buscará "Pan,de,Miel".
+    -->
+    <img th:with="keywords=${#strings.replace(producto.nombre, ' ', ',')}"
+         th:src="@{'https://source.unsplash.com/400x300/?' + ${keywords} + ',panaderia'}" 
+         th:alt="${producto.nombre}">
+</div>
             <div>
                 <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
                 <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
