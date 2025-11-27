@@ -264,6 +264,7 @@
             <th>Nombre</th>
             <th>Cargo</th>
             <th>Email</th>
+            <th>Teléfono</th>
             <th>Acciones</th>
         </tr>
         </thead>
@@ -271,23 +272,27 @@
         <tbody>
 
         <tr th:if="${empleados == null or #lists.isEmpty(empleados)}">
-            <td colspan="5">❌ No hay empleados registrados</td>
+            <td colspan="6">❌ No hay empleados registrados</td>
         </tr>
 
+        <!-- CORRECCIÓN: Usar id_empleado en lugar de idEmpleado -->
         <tr th:each="emp : ${empleados}">
-            <td th:text="${emp.idEmpleado}"></td>
+            <td th:text="${emp.id_empleado}"></td>
             <td th:text="${emp.nombre}"></td>
             <td th:text="${emp.cargo}"></td>
             <td th:text="${emp.email}"></td>
+            <td th:text="${emp.telefono}"></td>
 
             <td>
+                <!-- CORRECCIÓN: Usar id_empleado en el onclick -->
                 <button class="btn-warning"
-                        th:onclick="'abrirModal(\'modalEditar' + ${emp.idEmpleado} + '\')'">
+                        th:onclick="'abrirModal(\'modalEditar' + ${emp.id_empleado} + '\')'">
                     ✏ Editar
                 </button>
 
+                <!-- CORRECCIÓN: Usar id_empleado en el onclick -->
                 <button class="btn-danger"
-                        th:onclick="'abrirModal(\'modalEliminar' + ${emp.idEmpleado} + '\')'">
+                        th:onclick="'abrirModal(\'modalEliminar' + ${emp.id_empleado} + '\')'">
                     🗑 Eliminar
                 </button>
             </td>
@@ -305,10 +310,13 @@
         <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
         <h3>➕ Registrar Empleado</h3>
 
-        <form th:action="@{/empleados/guardar}" method="post" style="display:flex; flex-direction:column; gap:12px;">
+        <!-- CORRECCIÓN: La acción debe ser /agregar/guardar -->
+        <form th:action="@{/agregar/guardar}" method="post">
             <input name="nombre" placeholder="Nombre completo" required>
             <input name="cargo" placeholder="Cargo" required>
             <input name="email" type="email" placeholder="Correo electrónico" required>
+            <!-- CORRECCIÓN: Añadir campo teléfono -->
+            <input name="telefono" placeholder="Teléfono (opcional)">
             <input name="password" type="password" placeholder="Contraseña" required>
 
             <button type="submit">Guardar</button>
@@ -318,23 +326,29 @@
 
 
 <!-- MODALES EDITAR Y ELIMINAR -->
+<!-- CORRECCIÓN: Usar id_empleado en el th:each -->
 <div th:each="emp : ${empleados}">
 
     <!-- MODAL EDITAR -->
-    <div th:id="'modalEditar' + ${emp.idEmpleado}" class="modal">
+    <!-- CORRECCIÓN: Usar id_empleado en el th:id -->
+    <div th:id="'modalEditar' + ${emp.id_empleado}" class="modal">
         <div class="modal-content">
+            <!-- CORRECCIÓN: Usar id_empleado en el onclick -->
             <span class="close"
-                  th:onclick="'cerrarModal(\'modalEditar' + ${emp.idEmpleado} + '\')'">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEditar' + ${emp.id_empleado} + '\')'">&times;</span>
 
             <h3>✏ Editar Empleado</h3>
 
-            <form th:action="@{/empleados/actualizar}" method="post"
-                  style="display:flex; flex-direction:column; gap:12px;">
-                <input type="hidden" name="idEmpleado" th:value="${emp.idEmpleado}">
+            <!-- CORRECCIÓN: La acción debe ser /agregar/actualizar -->
+            <form th:action="@{/agregar/actualizar}" method="post">
+                <!-- CORRECCIÓN: El nombre del campo oculto debe ser id_empleado -->
+                <input type="hidden" name="id_empleado" th:value="${emp.id_empleado}">
                 <input name="nombre" th:value="${emp.nombre}" required>
                 <input name="cargo" th:value="${emp.cargo}" required>
                 <input name="email" type="email" th:value="${emp.email}" required>
-                <input name="password" type="password" placeholder="Nueva contraseña (opcional)">
+                <!-- CORRECCIÓN: Añadir y rellenar campo teléfono -->
+                <input name="telefono" th:value="${emp.telefono}">
+                <input name="password" type="password" placeholder="Nueva contraseña (dejar en blanco para no cambiar)">
 
                 <button type="submit">Actualizar</button>
             </form>
@@ -343,15 +357,18 @@
 
 
     <!-- MODAL ELIMINAR -->
-    <div th:id="'modalEliminar' + ${emp.idEmpleado}" class="modal modal-danger">
+    <!-- CORRECCIÓN: Usar id_empleado en el th:id -->
+    <div th:id="'modalEliminar' + ${emp.id_empleado}" class="modal modal-danger">
         <div class="modal-content">
+            <!-- CORRECCIÓN: Usar id_empleado en el onclick -->
             <span class="close"
-                  th:onclick="'cerrarModal(\'modalEliminar' + ${emp.idEmpleado} + '\')'">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEliminar' + ${emp.id_empleado} + '\')'">&times;</span>
 
             <h3>⚠ Confirmar Eliminación</h3>
             <p>¿Seguro que deseas eliminar a<br><strong th:text="${emp.nombre}"></strong>?</p>
 
-            <a th:href="@{/empleados/eliminar/{id}(id=${emp.idEmpleado})}">
+            <!-- CORRECCIÓN: El enlace debe ser /agregar/eliminar/{id} -->
+            <a th:href="@{/agregar/eliminar/{id}(id=${emp.id_empleado})}">
                 <button style="margin-top: 10px;">Eliminar Definitivamente</button>
             </a>
         </div>
