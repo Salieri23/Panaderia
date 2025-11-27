@@ -316,7 +316,8 @@
             <input name="cargo" placeholder="Cargo" required>
             <input name="email" type="email" placeholder="Correo electrónico" required>
             <!-- CORRECCIÓN: Añadir campo teléfono -->
-            <input name="telefono" placeholder="Teléfono (opcional)">
+            <input name="telefono" placeholder="Teléfono">
+            <!-- EL CAMPO DE CONTRASEÑA SE MANTIENE AQUÍ -->
             <input name="password" type="password" placeholder="Contraseña" required>
 
             <button type="submit">Guardar</button>
@@ -348,7 +349,8 @@
                 <input name="email" type="email" th:value="${emp.email}" required>
                 <!-- CORRECCIÓN: Añadir y rellenar campo teléfono -->
                 <input name="telefono" th:value="${emp.telefono}">
-                <input name="password" type="password" placeholder="Nueva contraseña (dejar en blanco para no cambiar)">
+                
+                <!-- ¡CAMPO DE CONTRASEÑA ELIMINADO DE AQUÍ POR SEGURIDAD! -->
 
                 <button type="submit">Actualizar</button>
             </form>
