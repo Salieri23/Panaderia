@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/tienda") // Ruta base para las vistas de la tienda
+@RequestMapping("/tienda")
 public class TiendaViewController {
 
     @Autowired
@@ -20,39 +20,47 @@ public class TiendaViewController {
 
     @GetMapping("/comprar")
     public String mostrarPaginaCompras(Model model) {
-        // 1. Cargar la lista de productos disponibles desde la BD
-        String sql = "SELECT id_producto, nombre, precio_base FROM producto WHERE cantidad > 0 ORDER BY nombre;";
+        
+        // =================================================================
+        // ¡CORRECCIÓN CLAVE! Esta es la nueva consulta SQL con JOIN.
+        // =================================================================
+        String sql = """
+            SELECT 
+                p.id_producto, 
+                p.nombre, 
+                p.precio_base 
+            FROM inventario i
+            INNER JOIN producto p ON i.id_producto = p.id_producto
+            WHERE i.cantidad > 0
+            ORDER BY p.nombre;
+        """;
+
         try {
             List<Map<String, Object>> productos = jdbcTemplate.queryForList(sql);
             model.addAttribute("productos", productos);
+            
+            // Depuración: Imprime en la consola cuántos productos encontró
+            System.out.println("Productos encontrados para la tienda: " + productos.size());
+
         } catch (Exception e) {
-            model.addAttribute("productos", List.of()); // Enviar lista vacía si hay error
+            model.addAttribute("productos", List.of());
             System.err.println("Error al cargar productos para la compra: " + e.getMessage());
         }
 
-        // 2. Obtener el ID del cliente que está logueado
-        // ¡IMPORTANTE! Esto es un ejemplo. Debes adaptarlo a tu sistema de login.
-        // Si usas Spring Security con un CustomUserDetailsService, puedes obtenerlo así:
+        // Obtener el ID del cliente logueado (lógica sin cambios)
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            // Asumimos que el nombre de usuario (username) es el email o un ID único
             String emailCliente = auth.getName(); 
             
-            // Buscamos el ID del cliente en la base de datos
             String sqlCliente = "SELECT id_cliente FROM cliente WHERE email = ?";
             Long idCliente = jdbcTemplate.queryForObject(sqlCliente, Long.class, emailCliente);
             model.addAttribute("idCliente", idCliente);
 
         } catch (Exception e) {
-            // Si no se puede obtener el cliente, ponemos un valor por defecto o manejamos el error
             System.err.println("No se pudo obtener el ID del cliente logueado: " + e.getMessage());
-            model.addAttribute("idCliente", null); // O redirigir a login
+            model.addAttribute("idCliente", null);
         }
         
-        // Si no usas Spring Security, necesitarás pasar el ID de otra forma (ej: sesión, parámetro, etc.)
-        // Por ahora, para pruebas, podrías hardcodearlo:
-        // model.addAttribute("idCliente", 1L);
-
-        return "comprar"; // Devuelve la vista comprar.html
+        return "comprar";
     }
 }
