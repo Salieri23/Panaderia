@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/empleados") // URL más clara para la gestión de empleados
-public class EmpleadoController {
+public class ControladorVistaEmpleados {
 
     @Autowired
     private EmpleadoRepository empleadoRepository;
