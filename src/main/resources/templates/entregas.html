@@ -1,142 +1,140 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <title>Entregas - Panadería</title>
-  <style>
-    :root {
-      --color-amarillo: #F9D923;
-      --color-azul: #0A2F66;
-      --color-azul-claro: #E8F1FA;
-      --color-hover: #FFD43B;
-    }
+    <meta charset="UTF-8" />
+    <title>Mis Entregas - Panadería</title>
+    <style>
+        :root {
+            --color-amarillo: #F9D923;
+            --color-azul: #0A2F66;
+            --color-azul-claro: #E8F1FA;
+            --color-hover: #FFD43B;
+        }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, var(--color-azul-claro), #fff);
-      margin: 0;
-      padding: 0;
-      color: var(--color-azul);
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, var(--color-azul-claro), #fff);
+            margin: 0;
+            padding: 0;
+            color: var(--color-azul);
+        }
 
-    header {
-      background-color: var(--color-azul);
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
+        header {
+            background-color: var(--color-azul);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
-    h1 {
-      margin: 0;
-      font-size: 36px;
-    }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+        }
 
-    .contenedor {
-      background-color: white;
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-      border: 3px solid var(--color-amarillo);
-    }
+        .contenedor {
+            background-color: white;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 3px solid var(--color-amarillo);
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 16px;
-      margin: 20px 0;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 16px;
+            margin: 20px 0;
+        }
 
-    th, td {
-      padding: 14px 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
 
-    th {
-      background-color: var(--color-azul);
-      color: #fff;
-    }
+        th {
+            background-color: var(--color-azul);
+            color: #fff;
+        }
 
-    tr:hover {
-      background-color: var(--color-azul-claro);
-    }
+        tr:hover {
+            background-color: var(--color-azul-claro);
+        }
 
-    .volver {
-      margin-top: 20px;
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: var(--color-azul);
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
+        .mensaje-vacio {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #888;
+        }
 
-    .volver:hover {
-      background-color: var(--color-hover);
-      color: var(--color-azul);
-      transform: translateY(-2px);
-    }
+        .volver {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--color-azul);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
 
-    /* Estilo para el icono del título */
-    .icono-titulo {
-      margin-right: 10px;
-    }
-  </style>
+        .volver:hover {
+            background-color: var(--color-hover);
+            color: var(--color-azul);
+            transform: translateY(-2px);
+        }
+
+        .icono-titulo {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1><span class="icono-titulo">📦</span> Entregas Realizadas</h1>
-  </header>
+<header>
+    <h1><span class="icono-titulo">📦</span> Mis Entregas</h1>
+</header>
 
-  <div class="contenedor">
-    <table id="tablaEntregas">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Pedido</th>
-          <th>Fecha</th>
-          <th>Dirección</th>
-          <th>Estado</th>
-          <th>Observaciones</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
+<div class="contenedor">
+    <table>
+        <thead>
+            <tr>
+                <th>ID Pedido</th>
+                <th>Fecha de Entrega</th>
+                <th>Dirección</th>
+                <th>Estado</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 
+              CAMBIO CLAVE: Usamos Thymeleaf para iterar sobre la lista "entregas"
+              que el controlador nos pasó.
+            -->
+            <tr th:if="${#lists.isEmpty(entregas)}">
+                <td colspan="5" class="mensaje-vacio">No tienes entregas registradas.</td>
+            </tr>
+
+            <tr th:each="entrega : ${entregas}">
+                <td th:text="${entrega.id_pedido_cliente}">123</td>
+                <td th:text="${#dates.format(entrega.fecha_entrega, 'dd/MM/yyyy')}">27/11/2025</td>
+                <td th:text="${entrega.direccion_entrega != null ? entrega.direccion_entrega : '-'}">Calle Falsa 123</td>
+                <td th:text="${entrega.estado}">Entregado</td>
+                <td th:text="${entrega.observaciones != null ? entrega.observaciones : '-'}">Ninguna</td>
+            </tr>
+        </tbody>
     </table>
 
-    <a class="volver" href="index.jsp">← Volver al Inicio</a>
-  </div>
+    <!-- CORRECCIÓN: Enlace dinámico con Thymeleaf para volver al inicio -->
+    <a class="volver" th:href="@{/}">← Volver al Inicio</a>
+</div>
 
-  <script>
-    const API_URL = 'https://panaderia-api.onrender.com/entregas';
-
-    fetch(API_URL)
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector("#tablaEntregas tbody");
-        data.forEach(entrega => {
-          const fila = document.createElement("tr");
-          fila.innerHTML = `
-            <td>${entrega.id_entrega}</td>
-            <td>${entrega.id_pedido_cliente}</td>
-            <td>${entrega.fecha_entrega}</td>
-            <td>${entrega.direccion_entrega}</td>
-            <td>${entrega.estado}</td>
-            <td>${entrega.observaciones || ""}</td>
-          `;
-          tbody.appendChild(fila);
-        });
-      })
-      .catch(error => {
-        console.error("Error al obtener las entregas:", error);
-      });
-  </script>
+<!-- EL BLOQUE <script> HA SIDO ELIMINADO PORQUE YA NO ES NECESARIO -->
 
 </body>
 </html>
