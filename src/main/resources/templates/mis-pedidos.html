@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mis Pedidos - Panadería</title>
+    <style>
+        :root {
+            --color-amarillo: #F9D923;
+            --color-azul: #0A2F66;
+            --color-azul-claro: #E8F1FA;
+            --color-hover: #FFD43B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, var(--color-azul-claro), #fff);
+            margin: 0;
+            padding: 20px;
+            color: var(--color-azul);
+        }
+
+        header {
+            background-color: var(--color-azul);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .pedido-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 2px solid var(--color-amarillo);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .pedido-header {
+            background-color: var(--color-azul);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .pedido-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .pedido-header .monto {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--color-amarillo);
+        }
+
+        .pedido-detalles {
+            padding: 20px;
+            display: none; /* Oculto por defecto */
+        }
+
+        .pedido-detalles table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .pedido-detalles th, .pedido-detalles td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pedido-detalles th {
+            background-color: var(--color-azul-claro);
+        }
+
+        .mensaje-vacio {
+            text-align: center;
+            padding: 50px;
+            font-size: 20px;
+            color: #888;
+            background-color: white;
+            border-radius: 15px;
+            border: 2px dashed #ccc;
+        }
+        
+        .mensaje-vacio a {
+            color: var(--color-azul);
+            font-weight: bold;
+        }
+
+        .volver {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: var(--color-azul);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .volver:hover {
+            background-color: var(--color-hover);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📋 Mis Pedidos</h1>
+</header>
+
+<div class="contenedor">
+    <div th:if="${#lists.isEmpty(pedidos)}" class="mensaje-vacio">
+        No has realizado ningún pedido todavía. <a th:href="@{/comprar}">¡Ir a comprar!</a>
+    </div>
+
+    <div th:each="pedido : ${pedidos}" class="pedido-card">
+        <div class="pedido-header" th:onclick="'toggleDetalles(' + ${pedido.id_pedido_cliente} + ')'">
+            <div>
+                <h3>Pedido N.º <span th:text="${pedido.id_pedido_cliente}">123</span></h3>
+                <p th:text="${#dates.format(pedido.fecha, 'dd/MM/yyyy HH:mm')}">Fecha y Hora</p>
+            </div>
+            <div class="monto" th:text="'S/ ' + ${pedido.monto_total}">S/ 0.00</div>
+        </div>
+        
+        <div th:id="'detalles-' + ${pedido.id_pedido_cliente}" class="pedido-detalles">
+            <h4>Productos del Pedido:</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="detalle : ${pedido.detalles}">
+                        <td th:text="${detalle.nombre}">Nombre Producto</td>
+                        <td th:text="${detalle.cantidad}">2</td>
+                        <td th:text="'S/ ' + ${detalle.precio_unitario}">S/ 10.00</td>
+                        <td th:text="'S/ ' + ${detalle.subtotal}">S/ 20.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a class="volver" th:href="@{/cliente/menu}">← Volver al Panel</a>
+</div>
+
+<script>
+    function toggleDetalles(idPedido) {
+        const detallesDiv = document.getElementById('detalles-' + idPedido);
+        if (detallesDiv.style.display === 'block') {
+            detallesDiv.style.display = 'none';
+        } else {
+            detallesDiv.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
