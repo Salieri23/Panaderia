@@ -1,14 +1,22 @@
 package com.panaderia.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 public class InventarioVistaController {
@@ -16,8 +24,11 @@ public class InventarioVistaController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // Ruta donde se guardarán las imágenes (definida en application.properties)
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
-    // Vista principal del inventario
+    // Vista principal del inventario (AHORA CARGA LA COLUMNA imagen_url)
     @GetMapping("/inventario")
     public String mostrarInventario(Model model) {
 
@@ -29,7 +40,8 @@ public class InventarioVistaController {
                 p.precio_base,
                 i.cantidad,
                 p.unidad_medida,
-                i.ultima_actualizacion
+                i.ultima_actualizacion,
+                p.imagen_url -- AÑADIMOS ESTA COLUMNA
             FROM inventario i
             INNER JOIN producto p ON i.id_producto = p.id_producto
             ORDER BY p.id_producto;
@@ -47,32 +59,34 @@ public class InventarioVistaController {
         return "inventario";
     }
 
-
-    // Guardar un nuevo producto
+    // Guardar un nuevo producto (AHORA MANEJA ARCHIVOS)
     @PostMapping("/inventario/guardar")
     public String guardarProducto(
             @RequestParam String nombre,
             @RequestParam String categoria,
             @RequestParam int cantidad,
             @RequestParam String unidad_medida,
-            @RequestParam BigDecimal precio_base
+            @RequestParam BigDecimal precio_base,
+            @RequestParam(value = "file", required = false) MultipartFile file
     ) {
+        String nombreArchivo = null;
+        if (!file.isEmpty()) {
+            nombreArchivo = guardarImagen(file); // Guardamos la imagen y obtenemos su nombre
+        }
 
         try {
-            // Guardar el producto en la tabla producto
             String sqlProducto = """
-                INSERT INTO producto (nombre, categoria, unidad_medida, precio_base)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO producto (nombre, categoria, unidad_medida, precio_base, imagen_url)
+                VALUES (?, ?, ?, ?, ?)
                 RETURNING id_producto;
             """;
 
             Integer idProducto = jdbcTemplate.queryForObject(
                     sqlProducto,
                     Integer.class,
-                    nombre, categoria, unidad_medida, precio_base
+                    nombre, categoria, unidad_medida, precio_base, nombreArchivo
             );
 
-            // Guardar inventario
             String sqlInventario = """
                 INSERT INTO inventario (id_producto, cantidad, ultima_actualizacion)
                 VALUES (?, ?, NOW());
@@ -87,8 +101,7 @@ public class InventarioVistaController {
         return "redirect:/inventario";
     }
 
-
-    // Actualizar producto existente
+    // Actualizar producto existente (AHORA MANEJA ARCHIVOS)
     @PostMapping("/inventario/actualizar")
     public String actualizarProducto(
             @RequestParam int id_producto,
@@ -96,20 +109,33 @@ public class InventarioVistaController {
             @RequestParam String categoria,
             @RequestParam BigDecimal precio_base,
             @RequestParam int cantidad,
-            @RequestParam String unidad_medida
+            @RequestParam String unidad_medida,
+            @RequestParam(value = "file", required = false) MultipartFile file
     ) {
+        String nombreArchivo = null;
+        if (!file.isEmpty()) {
+            nombreArchivo = guardarImagen(file); // Guardamos la nueva imagen
+        }
 
         try {
-            // Actualizar producto
-            String sqlProducto = """
-                UPDATE producto
-                SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?
-                WHERE id_producto = ?;
-            """;
+            // Si se subió una nueva imagen, la actualizamos. Si no, mantenemos la existente.
+            String sqlProducto;
+            if (nombreArchivo != null) {
+                sqlProducto = """
+                    UPDATE producto
+                    SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?, imagen_url = ?
+                    WHERE id_producto = ?;
+                    """;
+                jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, nombreArchivo, id_producto);
+            } else {
+                sqlProducto = """
+                    UPDATE producto
+                    SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?
+                    WHERE id_producto = ?;
+                    """;
+                jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, id_producto);
+            }
 
-            jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, id_producto);
-
-            // Actualizar inventario
             String sqlInventario = """
                 UPDATE inventario
                 SET cantidad = ?, ultima_actualizacion = NOW()
@@ -124,7 +150,6 @@ public class InventarioVistaController {
 
         return "redirect:/inventario";
     }
-
 
     // Eliminar producto + inventario
     @GetMapping("/inventario/eliminar/{id}")
@@ -141,4 +166,24 @@ public class InventarioVistaController {
         return "redirect:/inventario";
     }
 
+    // Método auxiliar para guardar la imagen en el servidor
+    private String guardarImagen(MultipartFile file) {
+        try {
+            // Crear directorio si no existe
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Generar un nombre de archivo único para evitar sobreescrituras
+            String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(uniqueFileName);
+
+            Files.copy(file.getInputStream(), filePath);
+
+            return uniqueFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar el archivo", e);
+        }
+    }
 }
