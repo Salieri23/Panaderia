@@ -311,14 +311,16 @@
         <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
         <h3>➕ Agregar Producto</h3>
 
-        <form th:action="@{/inventario/guardar}" method="post">
-    <input name="nombre" placeholder="Nombre" required>
-    <input name="categoria" placeholder="Categoría" required>
-    <input name="cantidad" type="number" min="0" placeholder="Cantidad" required>
-    <input name="unidad_medida" placeholder="Unidad" required>
-    <input name="precio_base" type="number" min="0" step="0.10" placeholder="Precio base" required>
+<form th:action="@{/inventario/guardar}" method="post" enctype="multipart/form-data">
+        <input name="nombre" placeholder="Nombre" required>
+        <input name="categoria" placeholder="Categoría" required>
+        <input name="cantidad" type="number" min="0" placeholder="Cantidad" required>
+        <input name="unidad_medida" placeholder="Unidad" required>
+        <input name="precio_base" type="number" min="0" step="0.10" placeholder="Precio base" required>
+        <label>Imagen del Producto (Opcional)</label>
+        <input type="file" name="file" accept="image/*">
 
-    <button type="submit">Guardar</button>
+        <button type="submit">Guardar</button>
 </form>
 
     </div>
@@ -335,17 +337,17 @@
                   th:onclick="'cerrarModal(\'modalEditar' + ${item.id_producto} + '\')'">&times;</span>
 
             <h3>✏ Editar Producto</h3>
+<form th:action="@{/inventario/actualizar}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id_producto" th:value="${item.id_producto}">
+        <input name="nombre" th:value="${item.nombre}">
+        <label>Imagen del Producto (Opcional)</label>
+        <input type="file" name="file" accept="image/*">
+        <div th:if="${item.imagen_url != null}" style="margin-top: 10px;">
+        <p>Imagen actual:</p>
+        <img th:src="@{'/images/productos/' + ${item.imagen_url}}" style="width: 100px; height: auto; border-radius: 8px;">
+</div>
 
-            <form th:action="@{/inventario/actualizar}" method="post">
-                <input type="hidden" name="id_producto" th:value="${item.id_producto}">
-
-                <input name="nombre" th:value="${item.nombre}">
-                <input name="categoria" th:value="${item.categoria}">
-                <input name="cantidad" type="number" min="0" th:value="${item.cantidad}">
-                <input name="unidad_medida" th:value="${item.unidad_medida}">
-                <input name="precio_base" type="number" min="0" step="0.10" th:value="${item.precio_base}">
-
-                <button type="submit">Actualizar</button>
+<button type="submit">Actualizar</button>
             </form>
         </div>
     </div>
