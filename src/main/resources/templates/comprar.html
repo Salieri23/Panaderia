@@ -251,17 +251,15 @@
 <div class="contenedor-principal">
     <main class="grid-productos">
         <div class="producto-card" th:each="producto : ${productos}">
-            <!-- VERSIÓN NUEVA Y MEJORADA CON UNSPLASH -->
-<!-- VERSIÓN NUEVA Y MEJORADA CON UNSPLASH -->
+<!-- VERSIÓN FINAL: Usa tus imágenes subidas o un placeholder -->
 <div class="imagen-contenedor">
     <!-- 
-      Usamos Unsplash Source para buscar imágenes reales basadas en el nombre del producto.
-      Reemplazamos espacios por comas para crear una búsqueda de múltiples palabras clave.
-      Ejemplo: "Pan de Miel" buscará "Pan,de,Miel".
+      Muestra la imagen subida desde el inventario si 'imagen_url' no es nulo.
+      Si no hay imagen, usa un placeholder con el nombre del producto.
     -->
-    <img th:with="keywords=${#strings.replace(producto.nombre, ' ', ',')}"
-         th:src="@{'https://source.unsplash.com/400x300/?' + ${keywords} + ',panaderia'}" 
-         th:alt="${producto.nombre}">
+    <img th:src="${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}" 
+         th:alt="${producto.nombre}"
+         style="font-family: 'Segoe UI', sans-serif; font-weight: bold;">
 </div>
             <div>
                 <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
