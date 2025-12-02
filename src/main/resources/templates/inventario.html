@@ -351,7 +351,7 @@
                 <input type="file" name="file" accept="image/*">
                 <div th:if="${item.imagen_url != null}" style="margin-top: 10px;">
                     <p>Imagen actual:</p>
-                    <img th:src="@{'/images/productos/' + ${item.imagen_url}}" style="width: 100px; height: auto; border-radius: 8px;">
+                    <img th:src="@{'/uploads/productos/' + ${item.imagen_url}}" style="width: 100px; height: auto; border-radius: 8px;">
                 </div>
 
                 <button type="submit">Actualizar</button>
