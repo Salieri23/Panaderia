@@ -20,14 +20,12 @@ public class TiendaViewController {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    // Mantenemos JdbcTemplate para la consulta de productos
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @GetMapping("/comprar")
     public String mostrarPaginaCompras(Model model) {
         
-        // --- CORRECCIÓN: Se eliminó 'p.imagen_url' de la consulta SQL ---
         String sql = """
             SELECT 
                 p.id_producto, 
@@ -42,8 +40,6 @@ public class TiendaViewController {
         try {
             List<Map<String, Object>> productos = jdbcTemplate.queryForList(sql);
             model.addAttribute("productos", productos);
-            System.out.println("Productos encontrados para la tienda: " + productos.size());
-
         } catch (Exception e) {
             model.addAttribute("productos", List.of());
             System.err.println("Error al cargar productos para la compra: " + e.getMessage());
@@ -53,12 +49,19 @@ public class TiendaViewController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String emailCliente = auth.getName(); 
             
-            String sqlCliente = "SELECT id_cliente FROM cliente WHERE email = ?";
-            Long idCliente = jdbcTemplate.queryForObject(sqlCliente, Long.class, emailCliente);
-            model.addAttribute("idCliente", idCliente);
+            // CORRECCIÓN: Usar el repositorio para buscar al cliente de forma segura
+            Cliente cliente = clienteRepository.findByEmail(emailCliente);
+
+            if (cliente != null) {
+                // Si el cliente existe, añadimos su ID al modelo
+                model.addAttribute("idCliente", cliente.getIdCliente());
+            } else {
+                // Si no se encuentra, el ID es null
+                model.addAttribute("idCliente", null);
+            }
 
         } catch (Exception e) {
-            System.err.println("No se pudo obtener el ID del cliente logueado: " + e.getMessage());
+            System.err.println("Error al obtener el cliente logueado: " + e.getMessage());
             model.addAttribute("idCliente", null);
         }
         
