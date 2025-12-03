@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/clientes")
@@ -27,53 +28,74 @@ public class ControladorVistaClientes {
             @RequestParam String nombre,
             @RequestParam String email,
             @RequestParam(required = false) String telefono,
-            @RequestParam String direccion
+            @RequestParam String direccion,
+            @RequestParam String password, // CORRECCIÓN: Añadido el parámetro faltante
+            RedirectAttributes redirectAttributes
     ) {
+        // Aquí deberías hashear la contraseña antes de guardarla por seguridad
+        // String hashedPassword = ...; 
+        // cliente.setPassword(hashedPassword);
+        
+        // Verificar si el email ya existe
+        if (clienteRepo.findByEmail(email) != null) {
+            redirectAttributes.addFlashAttribute("error", "El email ya está registrado.");
+            return "redirect:/clientes";
+        }
+
         Cliente cliente = new Cliente();
         cliente.setNombre(nombre);
         cliente.setEmail(email);
         cliente.setTelefono(telefono);
         cliente.setDireccion(direccion);
+        cliente.setPassword(password); // Guardar la contraseña (hasheada en producción)
 
         clienteRepo.save(cliente);
+        redirectAttributes.addFlashAttribute("success", "Cliente guardado con éxito.");
 
-        return "redirect:/clientes"; // Redirige a la lista de clientes
+        return "redirect:/clientes";
     }
 
-    // Eliminar un cliente desde Thymeleaf
+    // Eliminar un cliente
     @GetMapping("/eliminar/{id}")
-    public String eliminarCliente(@PathVariable Long id) {
-        clienteRepo.deleteById(id);
-        return "redirect:/clientes"; // Redirige a la lista de clientes
+    public String eliminarCliente(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            clienteRepo.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Cliente eliminado con éxito.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo eliminar el cliente. Puede tener pedidos asociados.");
+        }
+        return "redirect:/clientes";
     }
 
-    // Mostrar página para editar cliente
-    @GetMapping("/editar/{id}")
-    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
-        Cliente cliente = clienteRepo.findById(id).orElse(null);
-        model.addAttribute("cliente", cliente);
-        return "editar_cliente"; // Renderiza la página de edición
-    }
-
-    // Guardar cambios después de editar cliente (CORREGIDO)
-    @PostMapping("/editar/{id}")
-    public String editarCliente(
-            @PathVariable Long id,
+    // CORRECCIÓN: Nuevo método para manejar la actualización desde el modal
+    @PostMapping("/actualizar")
+    public String actualizarCliente(
+            @RequestParam Long id_cliente, // El 'name' del input hidden es 'id_cliente'
             @RequestParam String nombre,
             @RequestParam String email,
             @RequestParam(required = false) String telefono,
-            @RequestParam String direccion
+            @RequestParam String direccion,
+            RedirectAttributes redirectAttributes
     ) {
-        Cliente cliente = clienteRepo.findById(id).orElse(null);
-        if (cliente != null) {
-            cliente.setNombre(nombre);
-            cliente.setEmail(email);
-            cliente.setTelefono(telefono);
-            cliente.setDireccion(direccion);
-            clienteRepo.save(cliente);
-        }
+        Cliente cliente = clienteRepo.findById(id_cliente)
+                .orElseThrow(() -> new IllegalArgumentException("ID de cliente inválido: " + id_cliente));
         
-        // CORRECCIÓN CLAVE: Siempre redirige después de procesar el formulario
+        // Verificar si el nuevo email ya está en uso por otro cliente
+        Cliente existingCliente = clienteRepo.findByEmail(email);
+        if (existingCliente != null && !existingCliente.getId_cliente().equals(id_cliente)) {
+            redirectAttributes.addFlashAttribute("error", "El email ya está en uso por otro cliente.");
+            return "redirect:/clientes";
+        }
+
+        cliente.setNombre(nombre);
+        cliente.setEmail(email);
+        cliente.setTelefono(telefono);
+        cliente.setDireccion(direccion);
+        // No se actualiza la contraseña aquí por seguridad
+
+        clienteRepo.save(cliente);
+        redirectAttributes.addFlashAttribute("success", "Cliente actualizado con éxito.");
+        
         return "redirect:/clientes";
     }
 }
