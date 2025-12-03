@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes - Panadería</title>
+
+    <style>
+        :root {
+            --color-amarillo: #F9D923;
+            --color-azul: #0A2F66;
+            --color-azul-claro: #E8F1FA;
+            --color-hover: #FFD43B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(to right, var(--color-azul-claro), #fff);
+            margin: 0;
+            padding: 0;
+            color: var(--color-azul);
+        }
+
+        header {
+            background-color: var(--color-azul);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        main {
+            padding: 40px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 2px solid var(--color-amarillo);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--color-azul);
+            color: white;
+            font-size: 16px;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--color-azul-claro);
+        }
+
+        tr:hover {
+            background-color: var(--color-hover);
+        }
+
+        button,
+        .btn {
+            padding: 12px 20px;
+            background-color: var(--color-azul);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        button:hover,
+        .btn:hover {
+            background-color: var(--color-hover);
+            color: var(--color-azul);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: #c62828;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff5252;
+        }
+
+        .btn-warning {
+            background-color: #ff9800;
+        }
+
+        .btn-warning:hover {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .volver {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--color-azul);
+            background-color: var(--color-amarillo);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .volver:hover {
+            background-color: var(--color-hover);
+            transform: scale(1.05);
+        }
+
+        /* MODALES */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(2px);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 35px;
+            width: 450px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            border-top: 8px solid var(--color-amarillo);
+            animation: slideIn 0.25s ease-out;
+        }
+
+        .close {
+            float: right;
+            cursor: pointer;
+            color: #444;
+            font-size: 22px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .close:hover {
+            color: red;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: 2px solid var(--color-azul);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: var(--color-amarillo);
+            box-shadow: 0 0 6px rgba(249, 217, 35, 0.7);
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 18px;
+            background-color: var(--color-azul);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.25s;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--color-hover);
+            color: var(--color-azul);
+            transform: translateY(-2px);
+        }
+
+        /* Modal de eliminación */
+        .modal-danger .modal-content {
+            border-top-color: #c62828;
+        }
+
+        .modal-danger button {
+            background-color: #c62828 !important;
+        }
+
+        .modal-danger button:hover {
+            background-color: #ff5252 !important;
+            color: white !important;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+
+    <script>
+        function abrirModal(id) { document.getElementById(id).style.display = "flex"; }
+        function cerrarModal(id) { document.getElementById(id).style.display = "none"; }
+    </script>
+</head>
+
+<body>
+
+<header>
+    <h1>👥 Gestión de Clientes - Panadería</h1>
+</header>
+
+<main>
+
+    <button onclick="abrirModal('modalCrear')">➕ Registrar Cliente</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:if="${clientes == null or #lists.isEmpty(clientes)}">
+                <td colspan="6">❌ No hay clientes registrados</td>
+            </tr>
+
+            <tr th:each="cliente : ${clientes}">
+                <td th:text="${cliente.id_cliente}"></td>
+                <td th:text="${cliente.nombre}"></td>
+                <td th:text="${cliente.direccion}"></td>
+                <td th:text="${cliente.email}"></td>
+                <td th:text="${cliente.telefono}"></td>
+
+                <td>
+                    <button class="btn-warning"
+                            th:onclick="|abrirModal('modalEditar' + ${cliente.id_cliente} + ')|">
+                        ✏ Editar
+                    </button>
+
+                    <button class="btn-danger"
+                            th:onclick="|abrirModal('modalEliminar' + ${cliente.id_cliente} + ')|">
+                        🗑 Eliminar
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/}" class="volver">🏠 Volver al inicio</a>
+</main>
+
+<!-- MODAL CREAR CLIENTE -->
+<div id="modalCrear" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
+        <h3>➕ Registrar Cliente</h3>
+
+        <form th:action="@{/clientes/guardar}" method="post">
+            <input name="nombre" placeholder="Nombre completo" required>
+            <input name="direccion" placeholder="Dirección" required>
+            <input name="email" type="email" placeholder="Correo electrónico" required>
+            <input name="telefono" placeholder="Teléfono (opcional)">
+            <input name="password" type="password" placeholder="Contraseña" required>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- MODALES EDITAR Y ELIMINAR -->
+<div th:each="cliente : ${clientes}">
+
+    <!-- MODAL EDITAR -->
+    <div th:id="'modalEditar' + ${cliente.id_cliente}" class="modal">
+        <div class="modal-content">
+            <span class="close"
+                  th:onclick="|cerrarModal('modalEditar' + ${cliente.id_cliente} + ')|">&times;</span>
+
+            <h3>✏ Editar Cliente</h3>
+
+            <form th:action="@{/clientes/actualizar}" method="post">
+                <input type="hidden" name="id_cliente" th:value="${cliente.id_cliente}">
+                <input name="nombre" th:value="${cliente.nombre}" required>
+                <input name="direccion" th:value="${cliente.direccion}" required>
+                <input name="email" type="email" th:value="${cliente.email}" required>
+                <input name="telefono" th:value="${cliente.telefono}">
+                <!-- El campo de contraseña se elimina aquí por seguridad -->
+                <button type="submit">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL ELIMINAR -->
+    <div th:id="'modalEliminar' + ${cliente.id_cliente}" class="modal modal-danger">
+        <div class="modal-content">
+            <span class="close"
+                  th:onclick="|cerrarModal('modalEliminar' + ${cliente.id_cliente} + ')|">&times;</span>
+
+            <h3>⚠ Confirmar Eliminación</h3>
+            <p>¿Seguro que deseas eliminar a<br><strong th:text="${cliente.nombre}"></strong>?</p>
+
+            <a th:href="@{/clientes/eliminar/{id}(id=${cliente.id_cliente})}">
+                <button style="margin-top: 10px;">Eliminar Definitivamente</button>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
