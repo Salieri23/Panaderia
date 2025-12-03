@@ -251,17 +251,17 @@
 <div class="contenedor-principal">
     <main class="grid-productos">
         <div class="producto-card" th:each="producto : ${productos}">
-<!-- VERSIÓN FINAL: Usa tus imágenes subidas o un placeholder -->
+<!-- VERSIÓN CORREGIDA Y MÁS SEGURA -->
 <div class="imagen-contenedor">
     <!-- 
-      Muestra la imagen subida desde el inventario si 'imagen_url' no es nulo.
-      Si no hay imagen, usa un placeholder con el nombre del producto.
+      Usamos 'th:with' para pre-calcular la URL de la imagen.
+      Esto hace el código más limpio y evita errores de sintaxis en Thymeleaf.
     -->
-    <img th:src="${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}" 
-         th:alt="${producto.nombre}"
-         style="font-family: 'Segoe UI', sans-serif; font-weight: bold;">
+    <div th:with="imgSrc=${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}">
+        <img th:src="${imgSrc}" 
+             th:alt="${producto.nombre}">
+    </div>
 </div>
-            <div>
                 <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
                 <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
             </div>
