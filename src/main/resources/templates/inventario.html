@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
@@ -286,13 +285,15 @@
             <td th:text="${#dates.format(item.ultima_actualizacion, 'dd/MM/yyyy')}"></td>
 
             <td>
+                <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
                 <button class="btn-warning"
-                        th:onclick="'abrirModal(\'modalEditar' + ${item.id_producto} + '\')'">
+                        th:onclick="|abrirModal('modalEditar' + ${item.id_producto} + ')|">
                     ✏ Editar
                 </button>
 
+                <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
                 <button class="btn-danger"
-                        th:onclick="'abrirModal(\'modalEliminar' + ${item.id_producto} + '\')'">
+                        th:onclick="|abrirModal('modalEliminar' + ${item.id_producto} + ')|">
                     🗑 Eliminar
                 </button>
             </td>
@@ -304,43 +305,41 @@
     <a th:href="@{/}" class="volver">🏠 Volver al inicio</a>
 </main>
 
-
 <!-- MODAL CREAR -->
 <div id="modalCrear" class="modal">
     <div class="modal-content">
         <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
         <h3>➕ Agregar Producto</h3>
 
-<form th:action="@{/inventario/guardar}" method="post" enctype="multipart/form-data">
-        <input name="nombre" placeholder="Nombre" required>
-        <input name="categoria" placeholder="Categoría" required>
-        <input name="cantidad" type="number" min="0" placeholder="Cantidad" required>
-        <input name="unidad_medida" placeholder="Unidad" required>
-        <input name="precio_base" type="number" min="0" step="0.10" placeholder="Precio base" required>
-        <label>Imagen del Producto (Opcional)</label>
-        <input type="file" name="file" accept="image/*">
+        <form th:action="@{/inventario/guardar}" method="post" enctype="multipart/form-data">
+            <input name="nombre" placeholder="Nombre" required>
+            <input name="categoria" placeholder="Categoría" required>
+            <input name="cantidad" type="number" min="0" placeholder="Cantidad" required>
+            <input name="unidad_medida" placeholder="Unidad" required>
+            <input name="precio_base" type="number" min="0" step="0.10" placeholder="Precio base" required>
+            <label>Imagen del Producto (Opcional)</label>
+            <input type="file" name="file" accept="image/*">
 
-        <button type="submit">Guardar</button>
-</form>
-
+            <button type="submit">Guardar</button>
+        </form>
     </div>
 </div>
 
 
-<!-- MODAL EDITAR + ELIMINAR -->
+<!-- MODALES EDITAR Y ELIMINAR -->
 <div th:each="item : ${inventario}">
 
     <!-- MODAL EDITAR -->
     <div th:id="'modalEditar' + ${item.id_producto}" class="modal">
         <div class="modal-content">
-            <!-- CORRECCIÓN: Sintaxis más segura para onclick -->
-            <span class="close" th:onclick="|cerrarModal('modalEditar' + ${item.id_producto} + ')|">&times;</span>
+            <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+            <span class="close"
+                  th:onclick="|cerrarModal('modalEditar' + ${item.id_producto} + ')|">&times;</span>
 
             <h3>✏ Editar Producto</h3>
+
             <form th:action="@{/inventario/actualizar}" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="id_producto" th:value="${item.id_producto}">
-                
-                <!-- CORRECCIÓN: Añadimos todos los campos faltantes -->
                 <input name="nombre" th:value="${item.nombre}" required>
                 <input name="categoria" th:value="${item.categoria}" required>
                 <input name="cantidad" type="number" th:value="${item.cantidad}" required>
@@ -362,12 +361,13 @@
     <!-- MODAL ELIMINAR -->
     <div th:id="'modalEliminar' + ${item.id_producto}" class="modal modal-danger">
         <div class="modal-content">
-            <!-- CORRECCIÓN: Sintaxis más segura para onclick -->
-            <span class="close" th:onclick="|cerrarModal('modalEliminar' + ${item.id_producto} + ')|">&times;</span>
+            <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+            <span class="close"
+                  th:onclick="|cerrarModal('modalEliminar' + ${item.id_producto} + ')|">&times;</span>
 
             <h3>⚠ Confirmar Eliminación</h3>
-            <!-- CORRECCIÓN: Etiqueta <p> correctamente cerrada -->
-            <p>¿Seguro que deseas eliminar<br><strong th:text="${item.nombre}"></strong>?</p>
+            <!-- CORRECCIÓN: Se usa <br /> para HTML5 válido y se estructura mejor el párrafo -->
+            <p>¿Seguro que deseas eliminar <strong th:text="${item.nombre}"></strong>?</p>
 
             <a th:href="@{/inventario/eliminar/{id}(id=${item.id_producto})}">
                 <button style="margin-top: 10px;">Eliminar Definitivamente</button>
@@ -376,5 +376,6 @@
     </div>
 
 </div>
+
 </body>
 </html>
