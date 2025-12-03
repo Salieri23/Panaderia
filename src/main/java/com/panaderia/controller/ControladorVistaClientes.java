@@ -29,7 +29,7 @@ public class ControladorVistaClientes {
             @RequestParam String email,
             @RequestParam(required = false) String telefono,
             @RequestParam String direccion,
-            @RequestParam String password, // CORRECCIÓN: Añadido el parámetro faltante
+            @RequestParam String password,
             RedirectAttributes redirectAttributes
     ) {
         // Aquí deberías hashear la contraseña antes de guardarla por seguridad
@@ -48,6 +48,7 @@ public class ControladorVistaClientes {
         cliente.setTelefono(telefono);
         cliente.setDireccion(direccion);
         cliente.setPassword(password); // Guardar la contraseña (hasheada en producción)
+        cliente.setRol("CLIENTE"); // Asignar un rol por defecto
 
         clienteRepo.save(cliente);
         redirectAttributes.addFlashAttribute("success", "Cliente guardado con éxito.");
@@ -82,7 +83,9 @@ public class ControladorVistaClientes {
         
         // Verificar si el nuevo email ya está en uso por otro cliente
         Cliente existingCliente = clienteRepo.findByEmail(email);
-        if (existingCliente != null && !existingCliente.getId_cliente().equals(id_cliente)) {
+        
+        // CORRECCIÓN CLAVE: Se usa getIdCliente() en lugar de getId_cliente()
+        if (existingCliente != null && !existingCliente.getIdCliente().equals(id_cliente)) {
             redirectAttributes.addFlashAttribute("error", "El email ya está en uso por otro cliente.");
             return "redirect:/clientes";
         }
