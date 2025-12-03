@@ -2,8 +2,10 @@ package com.panaderia.controller;
 
 import com.panaderia.entity.Empleado;
 import com.panaderia.repository.EmpleadoRepository;
-import jakarta.servlet.http.HttpSession;
+import com.panaderia.service.EmpleadoUserDetails; // Asegúrate que esta importación sea correcta
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,73 +23,75 @@ public class EmpleadoPerfilController {
 
     /**
      * Muestra el formulario de actualización de perfil para el empleado logeado.
-     * Obtiene el ID del empleado desde la sesión HTTP.
+     * Obtiene los datos del usuario directamente desde el contexto de Spring Security.
      */
     @GetMapping("/actualizar-perfil")
-    public String mostrarFormularioPerfil(HttpSession session, Model model) {
-        // Obtenemos el ID del empleado que está en la sesión (lo guardaste al hacer login)
-        Long idEmpleado = (Long) session.getAttribute("empleadoLogeadoId");
+    public String mostrarFormularioPerfil(Model model) {
+        // 1. Obtenemos la información de autenticación del contexto de seguridad
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Si no hay un empleado en la sesión, redirigir al login
-        if (idEmpleado == null) {
-            return "redirect:/login";
+        // 2. Verificamos que el usuario logeado sea un Empleado
+        if (authentication != null && authentication.getPrincipal() instanceof EmpleadoUserDetails) {
+            
+            // 3. Hacemos un "cast" para obtener nuestro objeto EmpleadoUserDetails personalizado
+            EmpleadoUserDetails empleadoUserDetails = (EmpleadoUserDetails) authentication.getPrincipal();
+            
+            // 4. Obtenemos el objeto Empleado completo desde nuestro UserDetails
+            Empleado empleado = empleadoUserDetails.getEmpleado();
+
+            // 5. Añadimos el objeto empleado al modelo para que Thymeleaf pueda usarlo
+            model.addAttribute("empleado", empleado);
+            
+            return "actualizarEmpleado"; // Devolvemos la vista del formulario
         }
 
-        // Buscamos al empleado en la base de datos
-        Empleado empleado = empleadoRepository.findById(idEmpleado).orElse(null);
-
-        // Si por alguna razón no se encuentra, redirigir a una página de error o login
-        if (empleado == null) {
-            return "redirect:/login?error";
-        }
-
-        // Añadimos el objeto empleado al modelo para que Thymeleaf pueda usarlo
-        model.addAttribute("empleado", empleado);
-
-        // Devolvemos el nombre de la vista HTML
-        return "actualizarEmpleado";
+        // Si por alguna razón no es un empleado o no está autenticado, lo mandamos al login
+        return "redirect:/login";
     }
 
     /**
      * Procesa el formulario de actualización de perfil.
      */
     @PostMapping("/actualizar-perfil")
-    public String procesarActualizacionPerfil(@ModelAttribute Empleado empleadoForm, HttpSession session, RedirectAttributes redirectAttributes) {
-        // Obtenemos el ID del empleado logeado desde la sesión para seguridad
-        Long idEmpleadoLogeado = (Long) session.getAttribute("empleadoLogeadoId");
+    public String procesarActualizacionPerfil(@ModelAttribute Empleado empleadoForm, RedirectAttributes redirectAttributes) {
+        // Obtenemos los datos del usuario logeado de la misma forma que en el método GET
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof EmpleadoUserDetails) {
+            EmpleadoUserDetails empleadoUserDetails = (EmpleadoUserDetails) authentication.getPrincipal();
+            Long idEmpleadoLogeado = empleadoUserDetails.getEmpleado().getIdEmpleado();
 
-        if (idEmpleadoLogeado == null || !idEmpleadoLogeado.equals(empleadoForm.getIdEmpleado())) {
-            // Si no hay sesión o el ID del formulario no coincide con el de la sesión, es un intento de hackeo
-            redirectAttributes.addFlashAttribute("error", "Acceso denegado.");
-            return "redirect:/login";
-        }
+            // Verificación de seguridad: nos aseguramos de que el ID del formulario coincida con el del usuario logeado
+            if (!idEmpleadoLogeado.equals(empleadoForm.getIdEmpleado())) {
+                redirectAttributes.addFlashAttribute("error", "Acceso denegado.");
+                return "redirect:/empleadoMenu";
+            }
 
-        // Buscamos al empleado existente en la base de datos para actualizarlo
-        Empleado empleadoExistente = empleadoRepository.findById(idEmpleadoLogeado).orElse(null);
-        if (empleadoExistente == null) {
-            redirectAttributes.addFlashAttribute("error", "No se pudo encontrar tu perfil.");
+            // Buscamos al empleado en la base de datos para actualizarlo
+            Empleado empleadoExistente = empleadoRepository.findById(idEmpleadoLogeado).orElse(null);
+            if (empleadoExistente == null) {
+                redirectAttributes.addFlashAttribute("error", "No se pudo encontrar tu perfil.");
+                return "redirect:/empleadoMenu";
+            }
+
+            // Actualizamos los campos
+            empleadoExistente.setNombre(empleadoForm.getNombre());
+            empleadoExistente.setEmail(empleadoForm.getEmail());
+            empleadoExistente.setTelefono(empleadoForm.getTelefono());
+            empleadoExistente.setCargo(empleadoForm.getCargo());
+
+            // Lógica para la contraseña: solo se actualiza si el usuario escribió una nueva
+            if (empleadoForm.getPassword() != null && !empleadoForm.getPassword().trim().isEmpty()) {
+                // IMPORTANTE: En una aplicación real, hashea esta contraseña antes de guardarla
+                empleadoExistente.setPassword(empleadoForm.getPassword());
+            }
+
+            // Guardamos los cambios
+            empleadoRepository.save(empleadoExistente);
+
+            redirectAttributes.addFlashAttribute("success", "¡Tu perfil ha sido actualizado con éxito!");
             return "redirect:/empleadoMenu";
         }
 
-        // Actualizamos los campos con los datos del formulario
-        empleadoExistente.setNombre(empleadoForm.getNombre());
-        empleadoExistente.setEmail(empleadoForm.getEmail());
-        empleadoExistente.setTelefono(empleadoForm.getTelefono());
-        empleadoExistente.setCargo(empleadoForm.getCargo());
-
-        // Lógica para la contraseña: solo se actualiza si el usuario escribió una nueva
-        if (empleadoForm.getPassword() != null && !empleadoForm.getPassword().trim().isEmpty()) {
-            // IMPORTANTE: En una aplicación real, deberías hashear esta contraseña antes de guardarla
-            // String hashedPassword = passwordEncoder.encode(empleadoForm.getPassword());
-            // empleadoExistente.setPassword(hashedPassword);
-            empleadoExistente.setPassword(empleadoForm.getPassword());
-        }
-
-        // Guardamos los cambios en la base de datos
-        empleadoRepository.save(empleadoExistente);
-
-        // Añadimos un mensaje de éxito y redirigimos de vuelta al menú
-        redirectAttributes.addFlashAttribute("success", "¡Tu perfil ha sido actualizado con éxito!");
-        return "redirect:/empleadoMenu";
+        return "redirect:/login";
     }
 }
