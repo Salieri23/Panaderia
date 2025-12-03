@@ -285,15 +285,15 @@
             <td th:text="${#dates.format(item.ultima_actualizacion, 'dd/MM/yyyy')}"></td>
 
             <td>
-                <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+                <!-- CORRECCIÓN: Usar la sintaxis de comillas simples para mayor robustez -->
                 <button class="btn-warning"
-                        th:onclick="|abrirModal('modalEditar' + ${item.id_producto} + ')'|">
+                        th:onclick="'abrirModal(\'modalEditar' + ${item.id_producto} + '\')'">
                     ✏ Editar
                 </button>
 
-                <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+                <!-- CORRECCIÓN: Usar la sintaxis de comillas simples para mayor robustez -->
                 <button class="btn-danger"
-                        th:onclick="|abrirModal('modalEliminar' + ${item.id_producto} + ')'|">
+                        th:onclick="'abrirModal(\'modalEliminar' + ${item.id_producto} + '\')'">
                     🗑 Eliminar
                 </button>
             </td>
@@ -311,7 +311,6 @@
         <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
         <h3>➕ Agregar Producto</h3>
 
-        <!-- CORRECCIÓN: Se elimina enctype="multipart/form-data" al no haber archivos -->
         <form th:action="@{/inventario/guardar}" method="post">
             <input name="nombre" placeholder="Nombre" required>
             <input name="categoria" placeholder="Categoría" required>
@@ -331,13 +330,12 @@
     <!-- MODAL EDITAR -->
     <div th:id="'modalEditar' + ${item.id_producto}" class="modal">
         <div class="modal-content">
-            <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+            <!-- CORRECCIÓN: Usar la sintaxis de comillas simples para mayor robustez -->
             <span class="close"
-                  th:onclick="|cerrarModal('modalEditar' + ${item.id_producto} + ')|">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEditar' + ${item.id_producto} + '\')'">&times;</span>
 
             <h3>✏ Editar Producto</h3>
 
-            <!-- CORRECCIÓN: Se elimina enctype="multipart/form-data" al no haber archivos -->
             <form th:action="@{/inventario/actualizar}" method="post">
                 <input type="hidden" name="id_producto" th:value="${item.id_producto}">
                 <input name="nombre" th:value="${item.nombre}" required>
@@ -354,12 +352,11 @@
     <!-- MODAL ELIMINAR -->
     <div th:id="'modalEliminar' + ${item.id_producto}" class="modal modal-danger">
         <div class="modal-content">
-            <!-- CORRECCIÓN: Usamos la sintaxis |...| para mayor robustez -->
+            <!-- CORRECCIÓN: Usar la sintaxis de comillas simples para mayor robustez -->
             <span class="close"
-                  th:onclick="|cerrarModal('modalEliminar' + ${item.id_producto} + ')|">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEliminar' + ${item.id_producto} + '\')'">&times;</span>
 
             <h3>⚠ Confirmar Eliminación</h3>
-            <!-- CORRECCIÓN: Se usa <br /> para HTML5 válido y se estructura mejor el párrafo -->
             <p>¿Seguro que deseas eliminar <strong th:text="${item.nombre}"></strong>?</p>
 
             <a th:href="@{/inventario/eliminar/{id}(id=${item.id_producto})}">
