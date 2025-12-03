@@ -334,16 +334,28 @@
         }
     }
 
-    function procesarPago() {
+       function procesarPago() {
         if (carrito.length === 0) {
             alert("Tu carrito está vacío.");
             return;
         }
 
-        const idCliente = /*[[${idCliente}]]*/ 1;
+        // CORRECCIÓN: Obtener el ID del cliente desde el modelo de Thymeleaf
+        const idCliente = [[${idCliente}]];
+
+        // VALIDACIÓN: Si el ID del cliente es nulo o 0, detener el proceso.
+        if (!idCliente) {
+            alert("Error: No se ha podido identificar tu cuenta. Por favor, inicia sesión nuevamente.");
+            return;
+        }
+
+        // REQUERIMIENTO: El ID del empleado siempre será 1
+        const idEmpleado = 1; 
+        
         const idMetodoPago = 1; 
         const datosParaEnviar = {
             idCliente: idCliente,
+            idEmpleado: idEmpleado, // <-- Se envía el ID del empleado
             idMetodoPago: idMetodoPago,
             carrito: carrito
         };
@@ -370,7 +382,6 @@
             alert("Hubo un problema: " + error.message);
         });
     }
-
     document.addEventListener('DOMContentLoaded', () => {
         actualizarCarrito();
         document.getElementById('btn-pagar').addEventListener('click', procesarPago);
