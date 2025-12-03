@@ -167,9 +167,10 @@
 </div>
 
 <script>
-    function toggleDetalles(idPedido) {
+        function toggleDetalles(idPedido) {
         const detallesDiv = document.getElementById('detalles-' + idPedido);
-        if (detallesDiv.style.display === 'block') {
+        // CORRECCIÓN: Usar == para comparación en lugar de ===
+        if (detallesDiv.style.display == 'block') {
             detallesDiv.style.display = 'none';
         } else {
             detallesDiv.style.display = 'block';
