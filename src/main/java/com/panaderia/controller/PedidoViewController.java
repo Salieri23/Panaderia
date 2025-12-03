@@ -24,7 +24,7 @@ public class PedidoViewController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String emailCliente = auth.getName();
 
-            // 2. Buscar el cliente por su email. Si no se encuentra, el método .orElse(null) devuelve null.
+            // 2. Buscar el cliente por su email.
             String sqlCliente = "SELECT id_cliente FROM cliente WHERE email = ?";
             Long idCliente = jdbcTemplate.queryForObject(sqlCliente, Long.class, emailCliente);
 
@@ -35,12 +35,16 @@ public class PedidoViewController {
             }
 
             // 3. UNA SOLA CONSULTA PARA OBTENER TODO: pedidos y sus detalles.
-            // Usamos LEFT JOIN para asegurarnos de que los pedidos sin detalles (si los hubiera) aparezcan.
+            // El cambio clave está aquí: calculamos el monto_total con una subconsulta.
             String sqlPedidosConDetalles = """
                 SELECT
                     pc.id_pedido_cliente,
                     pc.fecha,
-                    pc.monto_total,
+                    (
+                        SELECT COALESCE(SUM(dpc_sub.subtotal), 0)
+                        FROM detalle_pedido_cliente dpc_sub
+                        WHERE dpc_sub.id_pedido_cliente = pc.id_pedido_cliente
+                    ) AS monto_total, -- Se calcula el monto total aquí
                     p.id_producto AS detalle_id_producto,
                     p.nombre AS detalle_nombre,
                     dpc.cantidad,
@@ -65,7 +69,7 @@ public class PedidoViewController {
                 if (pedido.isEmpty()) {
                     pedido.put("id_pedido_cliente", idPedido);
                     pedido.put("fecha", fila.get("fecha"));
-                    pedido.put("monto_total", fila.get("monto_total"));
+                    pedido.put("monto_total", fila.get("monto_total")); // Usamos el valor calculado
                     pedido.put("detalles", new ArrayList<>());
                     pedidosMap.put(idPedido, pedido);
                 }
@@ -86,7 +90,6 @@ public class PedidoViewController {
             System.out.println("Se encontraron " + pedidosMap.size() + " pedidos para el cliente ID: " + idCliente);
 
         } catch (Exception e) {
-            // Imprimimos el error completo en la consola para una mejor depuración
             e.printStackTrace();
             System.err.println("Error al cargar los pedidos del cliente: " + e.getMessage());
             model.addAttribute("pedidos", new ArrayList<>());
