@@ -255,95 +255,76 @@
             </tr>
         </thead>
 
-        <tbody>
-            <tr th:if="${clientes == null or #lists.isEmpty(clientes)}">
-                <td colspan="6">❌ No hay clientes registrados</td>
-            </tr>
+        <!-- ... (resto del código HTML) ... -->
+<tbody>
+    <tr th:if="${clientes == null or #lists.isEmpty(clientes)}">
+        <td colspan="6">❌ No hay clientes registrados</td>
+    </tr>
 
-            <tr th:each="cliente : ${clientes}">
-                <td th:text="${cliente.id_cliente}"></td>
-                <td th:text="${cliente.nombre}"></td>
-                <td th:text="${cliente.direccion}"></td>
-                <td th:text="${cliente.email}"></td>
-                <td th:text="${cliente.telefono}"></td>
+    <tr th:each="cliente : ${clientes}">
+        <!-- CAMBIO CLAVE: Asegúrate de que 'id' coincida con el getter en tu clase Cliente -->
+        <!-- Si tu campo es 'id_cliente', el getter debe ser getId_cliente() -->
+        <td th:text="${cliente.id}"></td> 
+        <td th:text="${cliente.nombre}"></td>
+        <td th:text="${cliente.direccion}"></td>
+        <td th:text="${cliente.email}"></td>
+        <td th:text="${cliente.telefono}"></td>
 
-                <td>
-                    <button class="btn-warning"
-                            th:onclick="|abrirModal('modalEditar' + ${cliente.id_cliente} + ')|">
-                        ✏ Editar
-                    </button>
+        <td>
+            <button class="btn-warning"
+                    th:onclick="|abrirModal('modalEditar' + ${cliente.id} + ')'|"> <!-- También aquí usa cliente.id -->
+                ✏ Editar
+            </button>
 
-                    <button class="btn-danger"
-                            th:onclick="|abrirModal('modalEliminar' + ${cliente.id_cliente} + ')|">
-                        🗑 Eliminar
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a th:href="@{/}" class="volver">🏠 Volver al inicio</a>
-</main>
-
-<!-- MODAL CREAR CLIENTE -->
-<div id="modalCrear" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModal('modalCrear')">&times;</span>
-        <h3>➕ Registrar Cliente</h3>
-
-        <form th:action="@{/clientes/guardar}" method="post">
-            <input name="nombre" placeholder="Nombre completo" required>
-            <input name="direccion" placeholder="Dirección" required>
-            <input name="email" type="email" placeholder="Correo electrónico" required>
-            <input name="telefono" placeholder="Teléfono (opcional)">
-            <input name="password" type="password" placeholder="Contraseña" required>
-
-            <button type="submit">Guardar</button>
-        </form>
-    </div>
-</div>
-
+            <button class="btn-danger"
+                    th:onclick="|abrirModal('modalEliminar' + ${cliente.id} + ')'|"> <!-- Y aquí -->
+                🗑 Eliminar
+            </button>
+        </td>
+    </tr>
+</tbody>
+<!-- ... (resto del código HTML) ... -->
 
 <!-- MODALES EDITAR Y ELIMINAR -->
 <div th:each="cliente : ${clientes}">
 
     <!-- MODAL EDITAR -->
-    <div th:id="'modalEditar' + ${cliente.id_cliente}" class="modal">
+    <!-- Usa el ID corregido -->
+    <div th:id="'modalEditar' + ${cliente.id}" class="modal">
         <div class="modal-content">
             <span class="close"
-                  th:onclick="|cerrarModal('modalEditar' + ${cliente.id_cliente} + ')|">&times;</span>
+                  th:onclick="|cerrarModal('modalEditar' + ${cliente.id} + ')'|">&times;</span>
 
             <h3>✏ Editar Cliente</h3>
 
             <form th:action="@{/clientes/actualizar}" method="post">
-                <input type="hidden" name="id_cliente" th:value="${cliente.id_cliente}">
+                <!-- Asegúrate que el 'name' y el 'th:value' coincidan con el getter -->
+                <input type="hidden" name="id_cliente" th:value="${cliente.id}">
                 <input name="nombre" th:value="${cliente.nombre}" required>
                 <input name="direccion" th:value="${cliente.direccion}" required>
                 <input name="email" type="email" th:value="${cliente.email}" required>
                 <input name="telefono" th:value="${cliente.telefono}">
-                <!-- El campo de contraseña se elimina aquí por seguridad -->
+                
                 <button type="submit">Actualizar</button>
             </form>
         </div>
     </div>
 
-
     <!-- MODAL ELIMINAR -->
-    <div th:id="'modalEliminar' + ${cliente.id_cliente}" class="modal modal-danger">
+    <!-- Usa el ID corregido -->
+    <div th:id="'modalEliminar' + ${cliente.id}" class="modal modal-danger">
         <div class="modal-content">
             <span class="close"
-                  th:onclick="|cerrarModal('modalEliminar' + ${cliente.id_cliente} + ')|">&times;</span>
+                  th:onclick="|cerrarModal('modalEliminar' + ${cliente.id} + ')'|">&times;</span>
 
             <h3>⚠ Confirmar Eliminación</h3>
             <p>¿Seguro que deseas eliminar a<br><strong th:text="${cliente.nombre}"></strong>?</p>
 
-            <a th:href="@{/clientes/eliminar/{id}(id=${cliente.id_cliente})}">
+            <!-- Usa el ID corregido en el enlace -->
+            <a th:href="@{/clientes/eliminar/{id}(id=${cliente.id})}">
                 <button style="margin-top: 10px;">Eliminar Definitivamente</button>
             </a>
         </div>
     </div>
 
 </div>
-
-</body>
-</html>
