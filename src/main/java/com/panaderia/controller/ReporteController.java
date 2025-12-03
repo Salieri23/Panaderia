@@ -22,9 +22,7 @@ public class ReporteController {
     public ResponseEntity<Map<String, Object>> getTotalVentas() {
         String sql = """
             SELECT COALESCE(SUM(p.monto), 0) as total_ventas 
-            FROM pago p 
-            INNER JOIN estado_pago ep ON p.id_estado_pago = ep.id_estado_pago 
-            WHERE ep.nombre = 'Completado'
+            FROM pago p
         """;
 
         try {
@@ -71,10 +69,10 @@ public class ReporteController {
     @GetMapping("/metodos_pago")
     public ResponseEntity<List<Map<String, Object>>> getMetodosPago() {
         String sql = """
-            SELECT mp.nombre as metodo, COUNT(*) as cantidad_usos 
+            SELECT mp.nombre_metodo as metodo, COUNT(*) as cantidad_usos 
             FROM pago p 
             INNER JOIN metodo_pago mp ON p.id_metodo_pago = mp.id_metodo_pago 
-            GROUP BY mp.nombre 
+            GROUP BY mp.nombre_metodo 
             ORDER BY cantidad_usos DESC
         """;
 
