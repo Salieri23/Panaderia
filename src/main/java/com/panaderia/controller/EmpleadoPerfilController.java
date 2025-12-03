@@ -27,7 +27,15 @@ public class EmpleadoPerfilController {
     public String mostrarFormularioPerfil(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        Empleado empleado = empleadoRepository.findByEmail(email);
+        
+        // --- CORRECCIÓN CLAVE ---
+        // Usamos .orElse(null) para manejar el Optional que devuelve findByEmail
+        Empleado empleado = empleadoRepository.findByEmail(email).orElse(null);
+
+        // Si no se encuentra el empleado, redirigimos al index (o a una página de error)
+        if (empleado == null) {
+            return "redirect:/index";
+        }
 
         model.addAttribute("empleado", empleado);
         return "actualizarEmpleado";
@@ -40,18 +48,19 @@ public class EmpleadoPerfilController {
     public String procesarActualizacionPerfil(@ModelAttribute Empleado empleadoForm, RedirectAttributes redirectAttributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        Empleado empleadoExistente = empleadoRepository.findByEmail(email);
+        
+        // --- CORRECCIÓN CLAVE ---
+        // Buscamos al empleado existente en la BD usando .orElse(null)
+        Empleado empleadoExistente = empleadoRepository.findByEmail(email).orElse(null);
 
         if (empleadoExistente == null) {
             redirectAttributes.addFlashAttribute("error", "No se pudo encontrar tu perfil.");
-            // CORRECCIÓN: Redirigir a /index
             return "redirect:/index";
         }
 
-        // Verificación de seguridad
+        // Verificación de seguridad: nos aseguramos de que el ID del formulario coincida con el del usuario logeado
         if (!empleadoExistente.getIdEmpleado().equals(empleadoForm.getIdEmpleado())) {
             redirectAttributes.addFlashAttribute("error", "Acceso denegado. No puedes editar otro perfil.");
-            // CORRECCIÓN: Redirigir a /index
             return "redirect:/index";
         }
 
@@ -61,15 +70,18 @@ public class EmpleadoPerfilController {
         empleadoExistente.setTelefono(empleadoForm.getTelefono());
         empleadoExistente.setCargo(empleadoForm.getCargo());
 
-        // Lógica para la contraseña
+        // Lógica para la contraseña: solo se actualiza si el usuario escribió una nueva
         if (empleadoForm.getPassword() != null && !empleadoForm.getPassword().trim().isEmpty()) {
+            // IMPORTANTE: En una aplicación real, hashea esta contraseña antes de guardarla
+            // String passwordEncriptada = passwordEncoder.encode(empleadoForm.getPassword());
+            // empleadoExistente.setPassword(passwordEncriptada);
             empleadoExistente.setPassword(empleadoForm.getPassword());
         }
 
+        // Guardamos los cambios
         empleadoRepository.save(empleadoExistente);
 
         redirectAttributes.addFlashAttribute("success", "¡Tu perfil ha sido actualizado con éxito!");
-        // CORRECCIÓN: Redirigir a /index
         return "redirect:/index";
     }
 }
