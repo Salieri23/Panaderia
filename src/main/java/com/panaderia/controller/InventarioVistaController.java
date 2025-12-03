@@ -59,97 +59,98 @@ public class InventarioVistaController {
         return "inventario";
     }
 
-    // Guardar un nuevo producto (AHORA MANEJA ARCHIVOS)
-    @PostMapping("/inventario/guardar")
-    public String guardarProducto(
-            @RequestParam String nombre,
-            @RequestParam String categoria,
-            @RequestParam int cantidad,
-            @RequestParam String unidad_medida,
-            @RequestParam BigDecimal precio_base,
-            @RequestParam(value = "file", required = false) MultipartFile file
-    ) {
-        String nombreArchivo = null;
-        if (!file.isEmpty()) {
-            nombreArchivo = guardarImagen(file); // Guardamos la imagen y obtenemos su nombre
-        }
-
-        try {
-            String sqlProducto = """
-                INSERT INTO producto (nombre, categoria, unidad_medida, precio_base, imagen_url)
-                VALUES (?, ?, ?, ?, ?)
-                RETURNING id_producto;
-            """;
-
-            Integer idProducto = jdbcTemplate.queryForObject(
-                    sqlProducto,
-                    Integer.class,
-                    nombre, categoria, unidad_medida, precio_base, nombreArchivo
-            );
-
-            String sqlInventario = """
-                INSERT INTO inventario (id_producto, cantidad, ultima_actualizacion)
-                VALUES (?, ?, NOW());
-            """;
-
-            jdbcTemplate.update(sqlInventario, idProducto, cantidad);
-
-        } catch (Exception e) {
-            System.out.println("Error al guardar producto: " + e.getMessage());
-        }
-
-        return "redirect:/inventario";
+  // Guardar un nuevo producto (LÓGICA CORREGIDA)
+@PostMapping("/inventario/guardar")
+public String guardarProducto(
+        @RequestParam String nombre,
+        @RequestParam String categoria,
+        @RequestParam int cantidad,
+        @RequestParam String unidad_medida,
+        @RequestParam BigDecimal precio_base,
+        @RequestParam(value = "file", required = false) MultipartFile file
+) {
+    String nombreArchivo = null;
+    // CORRECCIÓN: Se ejecuta solo si el archivo TIENE contenido
+    if (file != null && !file.isEmpty()) {
+        nombreArchivo = guardarImagen(file);
     }
 
-    // Actualizar producto existente (AHORA MANEJA ARCHIVOS)
-    @PostMapping("/inventario/actualizar")
-    public String actualizarProducto(
-            @RequestParam int id_producto,
-            @RequestParam String nombre,
-            @RequestParam String categoria,
-            @RequestParam BigDecimal precio_base,
-            @RequestParam int cantidad,
-            @RequestParam String unidad_medida,
-            @RequestParam(value = "file", required = false) MultipartFile file
-    ) {
-        String nombreArchivo = null;
-        if (!file.isEmpty()) {
-            nombreArchivo = guardarImagen(file); // Guardamos la nueva imagen
-        }
+    try {
+        String sqlProducto = """
+            INSERT INTO producto (nombre, categoria, unidad_medida, precio_base, imagen_url)
+            VALUES (?, ?, ?, ?, ?)
+            RETURNING id_producto;
+            """;
 
-        try {
-            // Si se subió una nueva imagen, la actualizamos. Si no, mantenemos la existente.
-            String sqlProducto;
-            if (nombreArchivo != null) {
-                sqlProducto = """
-                    UPDATE producto
-                    SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?, imagen_url = ?
-                    WHERE id_producto = ?;
-                    """;
-                jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, nombreArchivo, id_producto);
-            } else {
-                sqlProducto = """
-                    UPDATE producto
-                    SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?
-                    WHERE id_producto = ?;
-                    """;
-                jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, id_producto);
-            }
+        Integer idProducto = jdbcTemplate.queryForObject(
+                sqlProducto,
+                Integer.class,
+                nombre, categoria, unidad_medida, precio_base, nombreArchivo
+        );
 
-            String sqlInventario = """
-                UPDATE inventario
-                SET cantidad = ?, ultima_actualizacion = NOW()
+        String sqlInventario = """
+            INSERT INTO inventario (id_producto, cantidad, ultima_actualizacion)
+            VALUES (?, ?, NOW());
+            """;
+
+        jdbcTemplate.update(sqlInventario, idProducto, cantidad);
+
+    } catch (Exception e) {
+        System.err.println("Error al guardar producto: " + e.getMessage());
+    }
+
+    return "redirect:/inventario";
+}
+
+// Actualizar producto existente (LÓGICA CORREGIDA)
+@PostMapping("/inventario/actualizar")
+public String actualizarProducto(
+        @RequestParam int id_producto,
+        @RequestParam String nombre,
+        @RequestParam String categoria,
+        @RequestParam BigDecimal precio_base,
+        @RequestParam int cantidad,
+        @RequestParam String unidad_medida,
+        @RequestParam(value = "file", required = false) MultipartFile file
+) {
+    String nombreArchivo = null;
+    // CORRECCIÓN: Se ejecuta solo si el archivo TIENE contenido
+    if (file != null && !file.isEmpty()) {
+        nombreArchivo = guardarImagen(file);
+    }
+
+    try {
+        String sqlProducto;
+        if (nombreArchivo != null) {
+            sqlProducto = """
+                UPDATE producto
+                SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?, imagen_url = ?
                 WHERE id_producto = ?;
-            """;
-
-            jdbcTemplate.update(sqlInventario, cantidad, id_producto);
-
-        } catch (Exception e) {
-            System.out.println("Error al actualizar producto: " + e.getMessage());
+                """;
+            jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, nombreArchivo, id_producto);
+        } else {
+            sqlProducto = """
+                UPDATE producto
+                SET nombre = ?, categoria = ?, unidad_medida = ?, precio_base = ?
+                WHERE id_producto = ?;
+                """;
+            jdbcTemplate.update(sqlProducto, nombre, categoria, unidad_medida, precio_base, id_producto);
         }
 
-        return "redirect:/inventario";
+        String sqlInventario = """
+            UPDATE inventario
+            SET cantidad = ?, ultima_actualizacion = NOW()
+            WHERE id_producto = ?;
+            """;
+
+        jdbcTemplate.update(sqlInventario, cantidad, id_producto);
+
+    } catch (Exception e) {
+        System.err.println("Error al actualizar producto: " + e.getMessage());
     }
+
+    return "redirect:/inventario";
+}
 
     // Eliminar producto + inventario
     @GetMapping("/inventario/eliminar/{id}")
