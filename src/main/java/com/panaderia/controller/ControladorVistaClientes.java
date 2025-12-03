@@ -18,7 +18,7 @@ public class ControladorVistaClientes {
     @GetMapping
     public String mostrarClientes(Model model) {
         model.addAttribute("clientes", clienteRepo.findAll());
-        return "clientes";  
+        return "clientes";
     }
 
     // Recibir formulario para guardar un nuevo cliente
@@ -29,7 +29,6 @@ public class ControladorVistaClientes {
             @RequestParam(required = false) String telefono,
             @RequestParam String direccion
     ) {
-
         Cliente cliente = new Cliente();
         cliente.setNombre(nombre);
         cliente.setEmail(email);
@@ -38,14 +37,14 @@ public class ControladorVistaClientes {
 
         clienteRepo.save(cliente);
 
-        return "redirect:/clientes";  // Redirige a la lista de clientes 
+        return "redirect:/clientes"; // Redirige a la lista de clientes
     }
 
     // Eliminar un cliente desde Thymeleaf
     @GetMapping("/eliminar/{id}")
     public String eliminarCliente(@PathVariable Long id) {
         clienteRepo.deleteById(id);
-        return "redirect:/clientes";  // Redirige a la lista de clientes
+        return "redirect:/clientes"; // Redirige a la lista de clientes
     }
 
     // Mostrar página para editar cliente
@@ -53,10 +52,10 @@ public class ControladorVistaClientes {
     public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
         Cliente cliente = clienteRepo.findById(id).orElse(null);
         model.addAttribute("cliente", cliente);
-        return "editar_cliente";  
+        return "editar_cliente"; // Renderiza la página de edición
     }
 
-    // Guardar cambios después de editar cliente
+    // Guardar cambios después de editar cliente (CORREGIDO)
     @PostMapping("/editar/{id}")
     public String editarCliente(
             @PathVariable Long id,
@@ -73,6 +72,8 @@ public class ControladorVistaClientes {
             cliente.setDireccion(direccion);
             clienteRepo.save(cliente);
         }
-        return "redirect:/clientes";  
+        
+        // CORRECCIÓN CLAVE: Siempre redirige después de procesar el formulario
+        return "redirect:/clientes";
     }
 }
