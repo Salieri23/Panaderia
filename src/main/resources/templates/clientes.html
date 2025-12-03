@@ -260,7 +260,6 @@
             </tr>
 
             <tr th:each="cliente : ${clientes}">
-                <!-- CORRECCIÓN CLAVE: Cambiar 'id_cliente' por 'idCliente' para que coincida con el getter de la clase Cliente -->
                 <td th:text="${cliente.idCliente}"></td>
                 <td th:text="${cliente.nombre}"></td>
                 <td th:text="${cliente.direccion}"></td>
@@ -268,15 +267,15 @@
                 <td th:text="${cliente.telefono}"></td>
 
                 <td>
-                    <!-- CORRECCIÓN CLAVE: También aquí se usa 'idCliente' para construir el ID del modal -->
+                    <!-- CORRECCIÓN: Usar la misma sintaxis que en empleados.html -->
                     <button class="btn-warning"
-                            th:onclick="|abrirModal('modalEditar' + ${cliente.idCliente} + ')'|">
+                            th:onclick="'abrirModal(\'modalEditar' + ${cliente.idCliente} + '\')'">
                         ✏ Editar
                     </button>
 
-                    <!-- CORRECCIÓN CLAVE: Y aquí también -->
+                    <!-- CORRECCIÓN: Usar la misma sintaxis que en empleados.html -->
                     <button class="btn-danger"
-                            th:onclick="|abrirModal('modalEliminar' + ${cliente.idCliente} + ')'|">
+                            th:onclick="'abrirModal(\'modalEliminar' + ${cliente.idCliente} + '\')'">
                         🗑 Eliminar
                     </button>
                 </td>
@@ -299,7 +298,7 @@
             <input name="email" type="email" placeholder="Correo electrónico" required>
             <input name="telefono" placeholder="Teléfono (opcional)">
             <input name="password" type="password" placeholder="Contraseña" required>
-            <input name="rol" type="hidden" value="CLIENTE"> <!-- Asigna un rol por defecto -->
+            <input name="rol" type="hidden" value="CLIENTE">
 
             <button type="submit">Guardar</button>
         </form>
@@ -311,23 +310,21 @@
 <div th:each="cliente : ${clientes}">
 
     <!-- MODAL EDITAR -->
-    <!-- CORRECCIÓN CLAVE: El ID del modal debe usar 'idCliente' -->
     <div th:id="'modalEditar' + ${cliente.idCliente}" class="modal">
         <div class="modal-content">
-            <!-- CORRECCIÓN CLAVE: Y el onclick para cerrar también -->
+            <!-- CORRECCIÓN: Usar la misma sintaxis que en empleados.html -->
             <span class="close"
-                  th:onclick="|cerrarModal('modalEditar' + ${cliente.idCliente} + ')|">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEditar' + ${cliente.idCliente} + '\')'">&times;</span>
 
             <h3>✏ Editar Cliente</h3>
 
             <form th:action="@{/clientes/actualizar}" method="post">
-                <!-- El atributo 'name' debe coincidir con el parámetro del controlador. 'id_cliente' está bien aquí. -->
                 <input type="hidden" name="id_cliente" th:value="${cliente.idCliente}">
                 <input name="nombre" th:value="${cliente.nombre}" required>
                 <input name="direccion" th:value="${cliente.direccion}" required>
                 <input name="email" type="email" th:value="${cliente.email}" required>
                 <input name="telefono" th:value="${cliente.telefono}">
-                <!-- El campo de contraseña se elimina aquí por seguridad -->
+                
                 <button type="submit">Actualizar</button>
             </form>
         </div>
@@ -335,17 +332,15 @@
 
 
     <!-- MODAL ELIMINAR -->
-    <!-- CORRECCIÓN CLAVE: El ID del modal debe usar 'idCliente' -->
     <div th:id="'modalEliminar' + ${cliente.idCliente}" class="modal modal-danger">
         <div class="modal-content">
-            <!-- CORRECCIÓN CLAVE: Y el onclick para cerrar también -->
+            <!-- CORRECCIÓN: Usar la misma sintaxis que en empleados.html -->
             <span class="close"
-                  th:onclick="|cerrarModal('modalEliminar' + ${cliente.idCliente} + ')|">&times;</span>
+                  th:onclick="'cerrarModal(\'modalEliminar' + ${cliente.idCliente} + '\')'">&times;</span>
 
             <h3>⚠ Confirmar Eliminación</h3>
             <p>¿Seguro que deseas eliminar a<br><strong th:text="${cliente.nombre}"></strong>?</p>
 
-            <!-- CORRECCIÓN CLAVE: El enlace para eliminar debe usar 'idCliente' -->
             <a th:href="@{/clientes/eliminar/{id}(id=${cliente.idCliente})}">
                 <button style="margin-top: 10px;">Eliminar Definitivamente</button>
             </a>
