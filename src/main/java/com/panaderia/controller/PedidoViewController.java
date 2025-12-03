@@ -8,9 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/cliente")
@@ -22,51 +20,78 @@ public class PedidoViewController {
     @GetMapping("/pedidos")
     public String mostrarPedidosCliente(Model model) {
         try {
-            // 1. Obtener el ID del cliente logueado
+            // 1. Obtener el email del cliente logueado
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String emailCliente = auth.getName();
+
+            // 2. Buscar el cliente por su email. Si no se encuentra, el método .orElse(null) devuelve null.
             String sqlCliente = "SELECT id_cliente FROM cliente WHERE email = ?";
             Long idCliente = jdbcTemplate.queryForObject(sqlCliente, Long.class, emailCliente);
 
-            // 2. Obtener los pedidos principales del cliente
-            String sqlPedidos = """
-                SELECT 
-                    pc.id_pedido_cliente, 
-                    pc.fecha, 
-                    pc.monto_total
-                FROM pedido_cliente pc
-                WHERE pc.id_cliente = ?
-                ORDER BY pc.fecha DESC;
-                """;
-            
-            List<Map<String, Object>> pedidos = jdbcTemplate.queryForList(sqlPedidos, idCliente);
-
-            // 3. Para cada pedido, obtener sus detalles (productos)
-            for (Map<String, Object> pedido : pedidos) {
-                Long idPedido = (Long) pedido.get("id_pedido_cliente");
-
-                String sqlDetalles = """
-                    SELECT 
-                        p.nombre,
-                        dp.cantidad,
-                        dp.precio_unitario,
-                        dp.subtotal
-                    FROM detalle_pedido_cliente dp
-                    INNER JOIN producto p ON dp.id_producto = p.id_producto
-                    WHERE dp.id_pedido_cliente = ?;
-                    """;
-                
-                List<Map<String, Object>> detalles = jdbcTemplate.queryForList(sqlDetalles, idPedido);
-                pedido.put("detalles", detalles); // Añadimos la lista de detalles al mapa del pedido
+            if (idCliente == null) {
+                System.err.println("Error: No se encontró un cliente con el email: " + emailCliente);
+                model.addAttribute("pedidos", new ArrayList<>());
+                return "mis-pedidos";
             }
 
-            model.addAttribute("pedidos", pedidos);
+            // 3. UNA SOLA CONSULTA PARA OBTENER TODO: pedidos y sus detalles.
+            // Usamos LEFT JOIN para asegurarnos de que los pedidos sin detalles (si los hubiera) aparezcan.
+            String sqlPedidosConDetalles = """
+                SELECT
+                    pc.id_pedido_cliente,
+                    pc.fecha,
+                    pc.monto_total,
+                    p.id_producto AS detalle_id_producto,
+                    p.nombre AS detalle_nombre,
+                    dpc.cantidad,
+                    dpc.precio_unitario,
+                    dpc.subtotal
+                FROM pedido_cliente pc
+                LEFT JOIN detalle_pedido_cliente dpc ON pc.id_pedido_cliente = dpc.id_pedido_cliente
+                LEFT JOIN producto p ON dpc.id_producto = p.id_producto
+                WHERE pc.id_cliente = ?
+                ORDER BY pc.fecha DESC, pc.id_pedido_cliente DESC;
+                """;
+
+            List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sqlPedidosConDetalles, idCliente);
+
+            // 4. Procesamos el resultado plano para convertirlo en una lista de pedidos anidados
+            Map<Long, Map<String, Object>> pedidosMap = new LinkedHashMap<>();
+            for (Map<String, Object> fila : resultados) {
+                Long idPedido = (Long) fila.get("id_pedido_cliente");
+                Map<String, Object> pedido = pedidosMap.getOrDefault(idPedido, new LinkedHashMap<>());
+
+                // Si el pedido es nuevo, lo añadimos al mapa
+                if (pedido.isEmpty()) {
+                    pedido.put("id_pedido_cliente", idPedido);
+                    pedido.put("fecha", fila.get("fecha"));
+                    pedido.put("monto_total", fila.get("monto_total"));
+                    pedido.put("detalles", new ArrayList<>());
+                    pedidosMap.put(idPedido, pedido);
+                }
+
+                // Añadimos el detalle a la lista de detalles del pedido
+                // Solo si el detalle realmente existe (gracias al LEFT JOIN)
+                if (fila.get("detalle_id_producto") != null) {
+                    Map<String, Object> detalle = new LinkedHashMap<>();
+                    detalle.put("nombre", fila.get("detalle_nombre"));
+                    detalle.put("cantidad", fila.get("cantidad"));
+                    detalle.put("precio_unitario", fila.get("precio_unitario"));
+                    detalle.put("subtotal", fila.get("subtotal"));
+                    ((List<Map<String, Object>>) pedido.get("detalles")).add(detalle);
+                }
+            }
+
+            model.addAttribute("pedidos", new ArrayList<>(pedidosMap.values()));
+            System.out.println("Se encontraron " + pedidosMap.size() + " pedidos para el cliente ID: " + idCliente);
 
         } catch (Exception e) {
-            model.addAttribute("pedidos", new ArrayList<>()); // Enviamos lista vacía si hay error
+            // Imprimimos el error completo en la consola para una mejor depuración
+            e.printStackTrace();
             System.err.println("Error al cargar los pedidos del cliente: " + e.getMessage());
+            model.addAttribute("pedidos", new ArrayList<>());
         }
 
-        return "mis-pedidos"; // Renderiza la vista mis-pedidos.html
+        return "mis-pedidos";
     }
 }
