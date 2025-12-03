@@ -70,30 +70,13 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        .producto-card .imagen-contenedor {
-            width: 100%;
-            height: 150px;
-            overflow: hidden;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .producto-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .producto-card:hover img {
-            transform: scale(1.05);
-        }
+        /* --- CSS DE IMÁGENES ELIMINADO --- */
 
         .producto-card h3 {
             font-size: 18px;
             margin: 10px 0;
             color: var(--color-azul);
-            min-height: 50px;
+            min-height: 50px; /* Ajustado para mantener alineación */
         }
 
         .producto-card .precio {
@@ -250,14 +233,8 @@
 
 <div class="contenedor-principal">
     <main class="grid-productos">
-        <!-- CORRECCIÓN: La etiqueta <div> del producto-card ahora se cierra DESPUÉS del botón -->
+        <!-- EL CONTENEDOR DE IMÁGENES HA SIDO ELIMINADO -->
         <div class="producto-card" th:each="producto : ${productos}">
-            <div class="imagen-contenedor">
-                <div th:with="imgSrc=${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}">
-                    <img th:src="${imgSrc}" 
-                         th:alt="${producto.nombre}">
-                </div>
-            </div>
             <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
             <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
             
@@ -268,7 +245,6 @@
                     onclick="agregarAlCarrito(this)">
                 Agregar
             </button>
-            <!-- Esta es la etiqueta de cierre correcta para producto-card -->
         </div>
     </main>
 
