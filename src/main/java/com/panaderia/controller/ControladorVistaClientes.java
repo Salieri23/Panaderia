@@ -18,7 +18,7 @@ public class ControladorVistaClientes {
     @GetMapping
     public String mostrarClientes(Model model) {
         model.addAttribute("clientes", clienteRepo.findAll());
-        return "observar";  // Redirige a la vista 'observar.html'
+        return "clientes";  
     }
 
     // Recibir formulario para guardar un nuevo cliente
@@ -73,6 +73,6 @@ public class ControladorVistaClientes {
             cliente.setDireccion(direccion);
             clienteRepo.save(cliente);
         }
-        return "redirect:/clientes";  // Redirige a la lista de clientes en observar.html
+        return "redirect:/clientes";  
     }
 }
