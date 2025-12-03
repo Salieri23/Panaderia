@@ -70,13 +70,11 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        /* --- CSS DE IMÁGENES ELIMINADO --- */
-
         .producto-card h3 {
             font-size: 18px;
             margin: 10px 0;
             color: var(--color-azul);
-            min-height: 50px; /* Ajustado para mantener alineación */
+            min-height: 50px;
         }
 
         .producto-card .precio {
@@ -128,7 +126,7 @@
             list-style: none;
             padding: 0;
             margin: 15px 0;
-            max-height: 400px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
@@ -193,6 +191,27 @@
             padding-top: 15px;
         }
 
+        .seccion-pago {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .seccion-pago label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--color-azul);
+        }
+
+        #metodo-pago-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
         .btn-pagar {
             width: 100%;
             padding: 15px;
@@ -233,7 +252,6 @@
 
 <div class="contenedor-principal">
     <main class="grid-productos">
-        <!-- EL CONTENEDOR DE IMÁGENES HA SIDO ELIMINADO -->
         <div class="producto-card" th:each="producto : ${productos}">
             <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
             <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
@@ -252,9 +270,19 @@
         <h3>🛒 Tu Carrito</h3>
         <ul id="lista-carrito"></ul>
         <p id="carrito-vacio">Tu carrito está vacío.</p>
+        
         <div class="total">
             Total: <span id="monto-total">S/ 0.00</span>
         </div>
+
+        <!-- NUEVA SECCIÓN PARA SELECCIONAR MÉTODO DE PAGO -->
+        <div class="seccion-pago">
+            <label for="metodo-pago-select">Método de Pago:</label>
+            <select id="metodo-pago-select">
+                <option value="" disabled selected>Cargando métodos...</option>
+            </select>
+        </div>
+
         <button id="btn-pagar" class="btn-pagar" disabled>Pagar</button>
     </aside>
 </div>
@@ -334,29 +362,60 @@
         }
     }
 
-       function procesarPago() {
+    // NUEVA FUNCIÓN PARA CARGAR MÉTODOS DE PAGO
+    async function cargarMetodosPago() {
+        try {
+            const response = await fetch('/api/tienda/metodos-pago');
+            if (!response.ok) {
+                throw new Error('No se pudieron cargar los métodos de pago');
+            }
+            const metodos = await response.json();
+            const select = document.getElementById('metodo-pago-select');
+            select.innerHTML = '<option value="" disabled selected>Selecciona un método</option>'; // Reset y placeholder
+
+            metodos.forEach(metodo => {
+                const option = document.createElement('option');
+                option.value = metodo.id_metodo_pago;
+                option.textContent = metodo.nombre_metodo;
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error al cargar métodos de pago:', error);
+            const select = document.getElementById('metodo-pago-select');
+            select.innerHTML = '<option value="" disabled>Error al cargar</option>';
+        }
+    }
+
+    function procesarPago() {
         if (carrito.length === 0) {
             alert("Tu carrito está vacío.");
             return;
         }
 
-        // CORRECCIÓN: Obtener el ID del cliente desde el modelo de Thymeleaf
+        // VALIDACIÓN: Obtener el ID del método de pago seleccionado
+        const metodoPagoSelect = document.getElementById('metodo-pago-select');
+        const idMetodoPago = parseInt(metodoPagoSelect.value);
+
+        if (!idMetodoPago) {
+            alert("Por favor, selecciona un método de pago.");
+            metodoPagoSelect.focus(); // Lleva el foco al selector
+            return;
+        }
+
         const idCliente = [[${idCliente}]];
 
-        // VALIDACIÓN: Si el ID del cliente es nulo o 0, detener el proceso.
         if (!idCliente) {
             alert("Error: No se ha podido identificar tu cuenta. Por favor, inicia sesión nuevamente.");
             return;
         }
-
-        // REQUERIMIENTO: El ID del empleado siempre será 1
+        
         const idEmpleado = 1; 
         
-        const idMetodoPago = 1; 
         const datosParaEnviar = {
             idCliente: idCliente,
-            idEmpleado: idEmpleado, // <-- Se envía el ID del empleado
-            idMetodoPago: idMetodoPago,
+            idEmpleado: idEmpleado,
+            idMetodoPago: idMetodoPago, // <-- Se envía el ID seleccionado
             carrito: carrito
         };
 
@@ -382,8 +441,10 @@
             alert("Hubo un problema: " + error.message);
         });
     }
+
     document.addEventListener('DOMContentLoaded', () => {
         actualizarCarrito();
+        cargarMetodosPago(); // <-- Cargar los métodos al iniciar la página
         document.getElementById('btn-pagar').addEventListener('click', procesarPago);
     });
 </script>
