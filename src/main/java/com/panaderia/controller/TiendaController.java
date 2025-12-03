@@ -17,6 +17,25 @@ public class TiendaController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // ... dentro de tu clase TiendaController.java ...
+
+/**
+ * Endpoint para obtener la lista de métodos de pago disponibles.
+ */
+@GetMapping("/metodos-pago")
+public ResponseEntity<List<Map<String, Object>>> getMetodosPago() {
+    try {
+        String sql = "SELECT id_metodo_pago, nombre_metodo FROM metodopago ORDER BY nombre_metodo ASC";
+        List<Map<String, Object>> metodos = jdbcTemplate.queryForList(sql);
+        return ResponseEntity.ok(metodos);
+    } catch (Exception e) {
+        System.err.println("Error al obtener métodos de pago: " + e.getMessage());
+        return ResponseEntity.internalServerError().build();
+    }
+}
+
+// ... el resto de tu controlador ...
+    
     /**
      * Endpoint para procesar el pago del carrito de compras.
      * Recibe el ID del cliente, el ID del empleado, el método de pago y la lista de productos del carrito.
