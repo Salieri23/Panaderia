@@ -111,16 +111,23 @@
     <h1>🍞 Bienvenido al Sistema de Gestión de la Panadería</h1>
   </header>
 
-  <div class="opciones">
-    <div class="opcion" onclick="location.href='/registrar'">Registrar Pedido</div>
-    <div class="opcion" onclick="location.href='/consultar'">Consultar Pedido</div>
-    <div class="opcion" onclick="location.href='/opiniones'">Opiniones</div>
-    <div class="opcion" onclick="location.href='/inventario'">Inventario</div>
-    <div class="opcion" onclick="location.href='/reportes'">Reportes</div>
-    <div class="opcion" onclick="location.href='/entregas'">Entregas</div>
-    <div class="opcion" onclick="location.href='/agregar'">Agregar</div>
-    <div class="opcion" onclick="location.href='/observar'">Registros</div>
-  </div>
+ <div class="opciones">
+    <a class="opcion" th:href="@{/registrar}">Registrar Pedido</a>
+
+    <a class="opcion" th:href="@{/consultar}">Consultar Pedido</a>
+
+    <a class="opcion" th:href="@{/opiniones}">Opiniones</a>
+
+    <a class="opcion" th:href="@{/inventario}">Inventario</a>
+
+    <a class="opcion" th:href="@{/reportes}">Reportes</a>
+
+    <a class="opcion" th:href="@{/entregas}">Entregas</a>
+
+    <a class="opcion" th:href="@{/agregar}">Agregar</a>
+
+    <a class="opcion" th:href="@{/clientes}">Clientes</a>
+</div>
 
     <div style="text-align:center;">
     <form action="/login" method="get">
