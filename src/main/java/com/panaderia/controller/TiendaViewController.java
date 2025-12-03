@@ -1,5 +1,7 @@
 package com.panaderia.controller;
 
+import com.panaderia.entity.Cliente;
+import com.panaderia.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,16 +14,20 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-// CAMBIO: Quitamos la ruta base "/tienda"
 @RequestMapping("/") 
 public class TiendaViewController {
 
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    // Mantenemos JdbcTemplate para la consulta de productos
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @GetMapping("/comprar")
     public String mostrarPaginaCompras(Model model) {
         
+        // --- CORRECCIÓN: Se eliminó 'p.imagen_url' de la consulta SQL ---
         String sql = """
             SELECT 
                 p.id_producto, 
