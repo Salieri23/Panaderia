@@ -250,25 +250,17 @@
 
 <div class="contenedor-principal">
     <main class="grid-productos">
+        <!-- CORRECCIÓN: La etiqueta <div> del producto-card ahora se cierra DESPUÉS del botón -->
         <div class="producto-card" th:each="producto : ${productos}">
-<!-- VERSIÓN CORREGIDA Y MÁS SEGURA -->
-<div class="imagen-contenedor">
-    <!-- 
-      Usamos 'th:with' para pre-calcular la URL de la imagen.
-      Esto hace el código más limpio y evita errores de sintaxis en Thymeleaf.
-    -->
-    <div th:with="imgSrc=${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}">
-        <img th:src="${imgSrc}" 
-             th:alt="${producto.nombre}">
-    </div>
-</div>
-                <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
-                <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
+            <div class="imagen-contenedor">
+                <div th:with="imgSrc=${producto.imagen_url != null ? '/uploads/productos/' + producto.imagen_url : 'https://placehold.co/400x300/0A2F66/F9D923?text=' + #strings.replace(producto.nombre, ' ', '+')}">
+                    <img th:src="${imgSrc}" 
+                         th:alt="${producto.nombre}">
+                </div>
             </div>
-            <!-- 
-              CAMBIO CLAVE: Usamos atributos 'data-*' para pasar los datos de forma segura.
-              Evita problemas con comillas en los nombres de los productos.
-            -->
+            <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
+            <p class="precio" th:text="'S/ ' + ${producto.precio_base}">S/ 0.00</p>
+            
             <button class="btn-agregar" 
                     th:data-id="${producto.id_producto}"
                     th:data-nombre="${producto.nombre}"
@@ -276,6 +268,7 @@
                     onclick="agregarAlCarrito(this)">
                 Agregar
             </button>
+            <!-- Esta es la etiqueta de cierre correcta para producto-card -->
         </div>
     </main>
 
@@ -293,9 +286,7 @@
 <script>
     let carrito = [];
 
-    // La función ahora recibe el botón como parámetro
     function agregarAlCarrito(boton) {
-        // Obtenemos los datos desde los atributos 'data-*' del botón
         const id = parseInt(boton.dataset.id);
         const nombre = boton.dataset.nombre;
         const precio = parseFloat(boton.dataset.precio);
