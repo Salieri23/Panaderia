@@ -25,7 +25,7 @@ public class ReporteController {
             SELECT COALESCE(SUM(p.monto), 0) as total_ventas 
             FROM pago p
             INNER JOIN estadopago ep ON p.id_estado_pago = ep.id_estado_pago
-            WHERE ep.descripcion = 'Completado'
+            WHERE ep.descripcion = 'Pagado'
         """;
         try {
             Map<String, Object> result = jdbcTemplate.queryForMap(sql);
