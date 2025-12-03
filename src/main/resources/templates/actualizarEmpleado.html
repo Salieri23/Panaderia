@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Perfil - Panadería</title>
+  <style>
+    :root {
+      --color-amarillo: #F9D923;
+      --color-azul: #0A2F66;
+      --color-azul-claro: #E8F1FA;
+      --color-hover: #FFD43B;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, var(--color-azul-claro), #fff);
+      margin: 0;
+      padding: 0;
+      color: var(--color-azul);
+    }
+
+    header {
+      background-color: var(--color-azul);
+      padding: 25px 20px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      font-size: 36px;
+      margin: 0;
+    }
+
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+      padding: 30px;
+    }
+
+    .formulario {
+      background-color: white;
+      padding: 40px 50px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .formulario h2 {
+      color: var(--color-azul);
+      margin-bottom: 25px;
+      font-size: 26px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: var(--color-azul);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: 2px solid var(--color-amarillo);
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--color-azul);
+      box-shadow: 0 0 6px rgba(10,47,102,0.3);
+    }
+
+    button {
+      background-color: var(--color-azul);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--color-hover);
+      color: var(--color-azul);
+      font-weight: bold;
+      transform: translateY(-2px);
+    }
+
+    .volver {
+      display: block;
+      margin-top: 15px;
+      color: var(--color-azul);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .volver:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: var(--color-azul);
+      color: white;
+      font-size: 14px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧑‍💼 Mi Perfil de Empleado</h1>
+  </header>
+
+  <main>
+    <div class="formulario">
+      <h2>Editar mis datos</h2>
+
+      <!-- El formulario se envía a /empleado/actualizar-perfil y usa el objeto 'empleado' -->
+      <form th:action="@{/empleado/actualizar-perfil}" method="post" th:object="${empleado}">
+        <!-- Campo oculto para el ID del empleado -->
+        <input type="hidden" th:field="*{idEmpleado}">
+
+        <label for="nombre">Nombre completo:</label>
+        <input type="text" id="nombre" th:field="*{nombre}" required>
+
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" th:field="*{email}" required>
+
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" th:field="*{telefono}">
+
+        <label for="cargo">Cargo:</label>
+        <input type="text" id="cargo" th:field="*{cargo}" required>
+        
+        <!-- El campo de contraseña es opcional para actualizar -->
+        <label for="password">Contraseña (dejar en blanco para no cambiar):</label>
+        <input type="password" id="password" th:field="*{password}" placeholder="Nueva contraseña">
+
+        <button type="submit">Guardar Cambios</button>
+      </form>
+
+      <!-- Enlace para volver al menú del empleado -->
+      <a th:href="@{/empleadoMenu}" class="volver">⬅ Volver al menú</a>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 Panadería - Todos los derechos reservados
+  </footer>
+
+</body>
+</html>
