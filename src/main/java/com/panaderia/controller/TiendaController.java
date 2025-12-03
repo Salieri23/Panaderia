@@ -19,7 +19,7 @@ public class TiendaController {
 
     /**
      * Endpoint para procesar el pago del carrito de compras.
-     * Recibe el ID del cliente, el método de pago y la lista de productos del carrito.
+     * Recibe el ID del cliente, el ID del empleado, el método de pago y la lista de productos del carrito.
      */
     @PostMapping("/procesar-pedido")
     @Transactional
@@ -28,6 +28,8 @@ public class TiendaController {
         try {
             // 1. Extraer datos del cuerpo de la petición
             Long idCliente = Long.valueOf(datosPedido.get("idCliente").toString());
+            // --- CORRECCIÓN: Extraer el ID del empleado enviado desde el frontend ---
+            Long idEmpleado = Long.valueOf(datosPedido.get("idEmpleado").toString());
             Long idMetodoPago = Long.valueOf(datosPedido.get("idMetodoPago").toString());
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> carrito = (List<Map<String, Object>>) datosPedido.get("carrito");
@@ -37,12 +39,14 @@ public class TiendaController {
             }
 
             // 2. Crear el pedido principal
+            // --- CORRECCIÓN: Modificar la consulta SQL para incluir el id_empleado ---
             String sqlPedido = """
-                INSERT INTO pedido_cliente (fecha, id_cliente) 
-                VALUES (NOW(), ?) 
+                INSERT INTO pedido_cliente (fecha, id_cliente, id_empleado) 
+                VALUES (NOW(), ?, ?) 
                 RETURNING id_pedido_cliente;
                 """;
-            Long idPedido = jdbcTemplate.queryForObject(sqlPedido, Long.class, idCliente);
+            // --- CORRECCIÓN: Pasar el idEmpleado a la consulta junto con el idCliente ---
+            Long idPedido = jdbcTemplate.queryForObject(sqlPedido, Long.class, idCliente, idEmpleado);
 
             BigDecimal montoTotal = BigDecimal.ZERO;
 
@@ -91,4 +95,4 @@ public class TiendaController {
         }
     } 
 
-} 
+}
