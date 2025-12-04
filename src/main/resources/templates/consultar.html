@@ -52,6 +52,24 @@
     strong { color: var(--color-azul); }
     h3 { color: var(--color-azul); border-bottom: 2px solid var(--color-amarillo);
       padding-bottom: 8px; margin-top: 0; }
+
+    /* 🔵 Botón volver */
+    .volver {
+      display: inline-block;
+      margin-top: 25px;
+      text-decoration: none;
+      color: var(--color-azul);
+      background-color: var(--color-amarillo);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .volver:hover {
+      background-color: var(--color-hover);
+      transform: scale(1.05);
+    }
+
   </style>
 </head>
 <body>
@@ -111,6 +129,10 @@
         </div>
       </div>
     </div>
+
+    <!-- 🔵 BOTÓN VOLVER A INICIO -->
+    <a th:href="@{/index}" class="volver">🏠 Volver al inicio</a>
+
   </div>
 </body>
 </html>
