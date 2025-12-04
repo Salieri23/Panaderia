@@ -28,34 +28,6 @@ public class OpinionClienteController {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    /**
-     * NUEVO MÉTODO: Muestra la página principal con el historial de opiniones del cliente.
-     */
-    @GetMapping("/cliente/opiniones")
-    public String mostrarMisOpiniones(Principal principal, Model model) {
-        
-        String emailCliente = principal.getName();
-        Cliente cliente = clienteRepository.findByEmail(emailCliente); 
-        
-        if (cliente == null) {
-            return "redirect:/login"; 
-        }
-        
-        Long idCliente = cliente.getIdCliente();
-
-        // Buscamos todas las opiniones de este cliente
-        List<OpinionPedido> misOpiniones = opinionService.buscarPorCliente(idCliente);
-
-        model.addAttribute("misOpiniones", misOpiniones);
-        model.addAttribute("nombreCliente", cliente.getNombre()); // Para personalizar el título
-        
-        return "cliente/opiniones"; // Apunta a la nueva página HTML que crearemos
-    }
-
-    /**
-     * Muestra el formulario para agregar una NUEVA opinión.
-     * Este método ya lo tenías, lo mantenemos.
-     */
     @GetMapping("/cliente/opinion/nueva")
     public String mostrarNuevaOpinion(Principal principal, Model model) {
         
@@ -68,16 +40,19 @@ public class OpinionClienteController {
         
         Long idCliente = cliente.getIdCliente();
 
+        // 1. Lista de PEDIDOS del cliente para el formulario desplegable
+        List<PedidoCliente> listaPedidos = opinionService.PedidosCliente(idCliente);
+        model.addAttribute("listaPedidos", listaPedidos);
+
+        // 2. Lista de OPINIONES ya registradas por el cliente para la tabla
+        List<OpinionPedido> misOpiniones = opinionService.buscarPorCliente(idCliente);
+        model.addAttribute("misOpiniones", misOpiniones);
+
         model.addAttribute("opinionPedido", new OpinionPedido());
-        model.addAttribute("listaopiniones", opinionService.PedidosCliente(idCliente)); // Lista de sus PEDIDOS para elegir
         
         return "cliente/opinion/nueva";
     }
 
-    /**
-     * Procesa el formulario y guarda la nueva opinión.
-     * Este método ya lo tenías, lo mantenemos.
-     */
     @PostMapping("/cliente/opinion/guardar")
     public String guardarOpinion(OpinionPedido opinionPedido, Principal principal, Model model) {
         
@@ -86,10 +61,12 @@ public class OpinionClienteController {
 
         if (pedidoCliente == null) {
             model.addAttribute("errorPedido", "El pedido con ID " + idPedidoCliente + " no fue encontrado o no existe.");
+            // En caso de error, volvemos a cargar las listas necesarias
             String emailCliente = principal.getName();
             Cliente cliente = clienteRepository.findByEmail(emailCliente);
-            model.addAttribute("listaopiniones", opinionService.PedidosCliente(cliente.getIdCliente()));
-            model.addAttribute("opinionPedido", opinionPedido); // Devuelve los datos para no perderlos
+            model.addAttribute("listaPedidos", opinionService.PedidosCliente(cliente.getIdCliente()));
+            model.addAttribute("misOpiniones", opinionService.buscarPorCliente(cliente.getIdCliente()));
+            model.addAttribute("opinionPedido", opinionPedido); 
             return "cliente/opinion/nueva"; 
         }
 
@@ -100,6 +77,6 @@ public class OpinionClienteController {
 
         opinionService.guardarOpinion(opinionPedido);
 
-        return "redirect:/cliente/opiniones?agregada"; // Redirige a la página principal de opiniones
+        return "redirect:/cliente/opinion/nueva?exito"; // Añadimos un parámetro para mostrar un mensaje de éxito
     }
 }
