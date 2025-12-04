@@ -43,7 +43,7 @@ public class RegistroClienteController {
         clienteRepository.save(cliente);
         model.addAttribute("nombre", cliente.getNombre());
 
-        return "clienteMenu";
+        return "login";
     }
 
     // Mostrar formulario de actualización
