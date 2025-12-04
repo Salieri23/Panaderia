@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opinión del Pedido</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <style>
+    .bg-amarillo {
+      background-color: #ffc107 !important; 
+      color: #343a40 !important; 
+    }
+    .table-opiniones th {
+      background-color: #0d6efd; 
+      color: white;
+      border-color: #ffc107; 
+    }
+    .card-opinion {
+      border: 3px solid #ffc107; 
+    }
+    .table-striped > tbody > tr:nth-of-type(odd) > * {
+      background-color: rgba(255, 193, 7, 0.1); 
+    }
+    .btn-link {
+            color: #004d99 !important; 
+            border: 1px solid #004d99;
+            border-radius: 5px;
+            padding: 8px 15px;
+            text-decoration: none;
+    }
+    .btn-link:hover {
+            background-color: #ffc107;
+            color: #004d99 !important;
+            border-color: #004d99;
+    }
+  </style>
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="text-center text-primary border-bottom border-warning pb-2">Opinión de Clientes</h1>
+    <br>
+
+        <div th:if="${errorPedido}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+      <strong th:text="${errorPedido}">Error</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow card-opinion">
+          
+                    <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Tu Opinión sobre el Pedido</h4>
+          </div>
+          
+          <div class="card-body bg-light">
+            <form th:action="@{/cliente/opinion/guardar}" method="post" th:object="${opinionPedido}"> 
+              <div class="form-group mb-3">
+                <input type="hidden" th:field="*{idOpinion}">
+
+                <label for="idPedido" class="form-label fw-bold">ID del pedido</label>
+                <input type="number" class="form-control" th:field="*{pedidoCliente.idPedidoCliente}" name="idPedido" required placeholder="Ej. 1024">
+              </div>
+
+              <div class="form-group mb-3">
+                <label for="comentario" class="form-label fw-bold">Comentario</label>
+                <textarea class="form-control" th:field="*{comentario}" rows="3" placeholder="¿Qué te pareció el servicio y el producto?"></textarea>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label for="calificacion" class="form-label fw-bold">Calificación (1-5)</label>
+                  <input type="number" max="5" min="1" class="form-control" th:field="*{calificacion}">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label for="satisfaccion" class="form-label fw-bold">Satisfacción (1-5)</label>
+                  <input type="number" max="5" min="1" class="form-control" th:field="*{satisfaccion}">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary bg-amarillo text-dark fw-bold border-primary mt-3 w-100">
+                                Enviar Opinión 
+                            </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5 border-warning border-2">
+
+  <div class="container">
+    <h2 class="text-center text-primary mb-4">Tabla de Opiniones Registradas</h2>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover shadow table-opiniones">
+        <thead class="bg-primary text-white">
+          <tr>
+            <th scope="col">Comentario</th>
+            <th scope="col">Calificación </th>
+            <th scope="col">Satisfacción </th>
+            <th scope="col">Fecha </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="opi : ${listaopiniones}">
+            <td th:text="${opi.comentario}"></td>
+            <td th:text="${opi.calificacion}"></td>
+            <td th:text="${opi.satisfaccion}"></td>
+            <td th:text="${opi.fecha}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="text-center mt-3">
+            <a th:href="@{/clienteMenu}" class="btn btn-link">Volver al Menú</a>
+    </div>
+
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
