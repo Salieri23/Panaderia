@@ -126,9 +126,9 @@
   </div>
 
   <div class="opciones">
-    <a class="opcion" th:href="@{/cliente/pedidos}">Mis Pedidos</a>
-    <a class="opcion" th:href="@{/cliente/opinion/nueva}">Dejar Opinión</a>
     <a class="opcion" th:href="@{/cliente/compra}">Comprar</a>
+    <a class="opcion" th:href="@{/cliente/pedidos}">Mis Pedidos</a>
+    <a class="opcion" th:href="@{/cliente/opinion/nueva}">Ver Mis Opiniones</a>
 
     <!-- 🔹 Redirección dinámica con Thymeleaf -->
     <a class="opcion" th:href="@{/actualizarCliente(id=${cliente.idCliente})}">
